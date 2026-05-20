@@ -9,6 +9,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/winners': 'http://localhost:3000',
+      '/stream': 'http://localhost:3000',
     },
   },
 })

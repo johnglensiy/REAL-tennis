@@ -50,6 +50,22 @@ function App() {
       .catch(err => setError(err.message));
   }, []);
 
+  
+  useEffect(() => {
+    const es = new EventSource('/stream');
+
+    es.onmessage = (e: MessageEvent) => {
+      const point: WinnerPoint = JSON.parse(e.data);
+      setData(prev => prev ? { ...prev, winners: [...prev.winners, point] } : prev);
+    };
+
+    es.onerror = (e: Event) => {
+      console.error('SSE error', e);
+    };
+
+    return () => es.close();
+  }, []);
+
   if (error) return (
     <div className="flex items-center justify-center h-screen text-gray-400 text-sm">
       Error: {error}
