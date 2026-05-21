@@ -65,6 +65,40 @@ function diffSnapshots(prev: MatchSnapshot, curr: MatchSnapshot): void {
 }
 
 let lastSnapshot: MatchSnapshot | null = null;
+let matchDataSnapshot: MatchSnapshot | null = null;
+const matchDataClients = new Set<any>();
+
+export function startWatchingMatchData() {
+    page.on('response', async (response) => {
+        if (!response.url().includes('livematches')) return;
+
+        try {
+            const json = await response.json();
+            const tournaments = json?.Data?.LiveMatchesTournamentsOrdered ?? [];
+
+            for (const tournament of tournaments) {
+                const match = tournament.LiveMatches?.find((m: any) => {
+                    const p = `${m.PlayerTeam.Player.PlayerFirstName} ${m.PlayerTeam.Player.PlayerLastName}`.toLowerCase();
+                    const o = `${m.OpponentTeam.Player.PlayerFirstName} ${m.OpponentTeam.Player.PlayerLastName}`.toLowerCase();
+                    return p.includes('darderi') || o.includes('darderi') ||
+                           p.includes('hanfmann') || o.includes('hanfmann');
+                });
+
+                if (!match) continue;
+
+                matchDataSnapshot = extractSnapshot(match);
+                console.log(`[MATCHDATA] ${matchDataSnapshot.playerTeam.name} ${matchDataSnapshot.playerTeam.gameScore} | ${matchDataSnapshot.opponentTeam.name} ${matchDataSnapshot.opponentTeam.gameScore}`);
+
+                // push to all connected SSE clients
+                for (const client of matchDataClients) {
+                    client.write(`data: ${JSON.stringify(matchDataSnapshot)}\n\n`);
+                }
+            }
+        } catch (e) {
+            // not JSON, skip
+        }
+    });
+}
 
 export function startWatching() {
     context.on('response', async (response) => {
@@ -98,6 +132,30 @@ export function startWatching() {
 router.get('/', async (req, res) => {
     console.log("Routing to events API");
     res.json({ message: `Watching match ${TARGET_MATCH_ID}` });
+});
+
+router.get('/matchdata', (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    if (!matchDataSnapshot) {
+        res.status(404).json({ error: 'No match data yet — still waiting for livematches response' });
+        return;
+    }
+    res.json(matchDataSnapshot);
+});
+
+router.get('/matchdata/stream', (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    // send current snapshot immediately on connect so client doesn't wait
+    if (matchDataSnapshot) {
+        res.write(`data: ${JSON.stringify(matchDataSnapshot)}\n\n`);
+    }
+
+    matchDataClients.add(res);
+    req.on('close', () => matchDataClients.delete(res));
 });
 
 router.get('/winners', async (req, res) => {
