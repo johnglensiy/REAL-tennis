@@ -60,18 +60,18 @@ function App() {
   const [matchData, setMatchData] = useState<MatchData | null>(null);
 
   useEffect(() => {
-    const es = new EventSource('http://localhost:3000/matchdata/stream');
+    const es = new EventSource('matchdata/stream');
     es.onmessage = (e: MessageEvent) => setMatchData(JSON.parse(e.data));
     es.onerror = () => setError('Lost connection to match data stream');
     return () => es.close();
   }, []);
 
-  useEffect(() => {
-    fetch('/winners')
-      .then(res => res.json())
-      .then(setData)
-      .catch(err => setError(err.message));
-  }, []);
+  // useEffect(() => {
+  //   fetch('/winners')
+  //     .then(res => res.json())
+  //     .then(setData)
+  //     .catch(err => setError(err.message));
+  // }, []);
 
   useEffect(() => {
     const es = new EventSource('/stream');
@@ -94,16 +94,13 @@ function App() {
     </div>
   );
 
-  if (!data || !matchData) return (
-    <div className="flex items-center justify-center h-screen text-gray-400 text-sm">
-      Loading…
-    </div>
-  );
+  // if (!data) return <div>Loading winners...</div>;
+  if (!matchData) return <div>Loading match data...</div>;
 
   return (
     <div className="min-h-screen bg-gray-50 px-6 py-8 font-sans">
       {/* Title */}
-      <div className="mb-7">
+      {/* <div className="mb-7">
         <h1 className="text-2xl font-bold text-gray-900">
           {data.playerName}
           <span className="text-base font-normal text-gray-400 mx-2">vs</span>
@@ -115,7 +112,7 @@ function App() {
         <p className="mt-1 text-sm text-gray-400">
           {data.matchType} · {data.winners.length} winners
         </p>
-      </div>
+      </div> */}
 
       {/*don't use winners data!*/}
       {(() => {
@@ -151,11 +148,11 @@ function App() {
       })()}
 
       {/* Cards */}
-      <div className="flex flex-wrap gap-4">
+      {/* <div className="flex flex-wrap gap-4">
         {data.winners.map(w => (
           <WinnerCard key={w.pointId} winner={w} />
         ))}
-      </div>
+      </div> */}
     </div>
   );
 }

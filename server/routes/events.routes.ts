@@ -68,7 +68,39 @@ let lastSnapshot: MatchSnapshot | null = null;
 let matchDataSnapshot: MatchSnapshot | null = null;
 const matchDataClients = new Set<any>();
 
-export function startWatchingMatchData() {
+
+export function startWatchingAllMatchData() {
+    page.on('response', async (response) => {
+        if (!response.url().includes('livematches')) return;
+
+        try {
+            const json = await response.json();
+            const tournaments = json.Data?.LiveMatchesTournamentsOrdered ?? [];
+
+            for (const tournament of tournaments) {
+                const liveMatches = tournament.LiveMatches?.filter((m: any) => {
+                    return m.MatchStatus == "P";
+                });
+
+                if (liveMatches.length === 0) continue;
+
+                for (const lm of liveMatches) {
+                    const liveSnapshot = extractSnapshot(lm);
+                    console.log(`[MATCHDATA] ${liveSnapshot.playerTeam.name} ${liveSnapshot.playerTeam.gameScore} | ${liveSnapshot.opponentTeam.name} ${liveSnapshot.opponentTeam.gameScore}`);
+
+                    // push this match's live snapshot to clients
+                    for (const client of matchDataClients) {
+                        client.write(`data: ${JSON.stringify(liveSnapshot)}\n\n`)
+                    }
+                }
+            }
+        } catch (e) {
+
+        }
+    })
+}
+
+export function startWatchingSingleMatchData() {
     page.on('response', async (response) => {
         if (!response.url().includes('livematches')) return;
 

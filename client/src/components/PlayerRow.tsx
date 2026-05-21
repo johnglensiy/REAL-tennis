@@ -83,9 +83,3 @@ export default function PlayerRow(props: PlayerRowProps) {
         </div>
     );
 };
-
-{/*sets header */}
-            
-            {/*player A (whoever came from higher in bracket) */}
-
-            {/*player B (whoever came from lower in bracket) */}

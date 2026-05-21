@@ -1,6 +1,6 @@
 import express from 'express';
 import { chromium, Browser, BrowserContext, Page } from 'playwright';
-import eventsRoutes, { startWatching, startWatchingMatchData } from './routes/events.routes.ts';
+import eventsRoutes, { startWatching, startWatchingSingleMatchData, startWatchingAllMatchData } from './routes/events.routes.ts';
 
 const app = express();
 const PORT = 3000;
@@ -15,7 +15,8 @@ browser = await chromium.launch({ channel: 'chrome', headless: false })
 context = await browser.newContext();
 page = await context.newPage();
 await page.goto("https://www.atptour.com/en/scores/current");
-startWatchingMatchData();
+// startWatchingMatchData();
+startWatchingAllMatchData();
 
 app.use('/', eventsRoutes);
 
