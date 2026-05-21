@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import WinnerCard from './components/WinnerCard';
+import PlayerRow from './components/PlayerRow';
+
 import './App.css';
 
 interface WinnerPoint {
@@ -39,9 +41,30 @@ interface WinnersData {
   winners: WinnerPoint[];
 }
 
+interface TeamSnapshot {
+  name: string;
+  gameScore: string;
+  setScores: (number | null)[];
+}
+
+interface MatchData {
+  matchId: string;
+  matchStatus: string;
+  playerTeam: TeamSnapshot;
+  opponentTeam: TeamSnapshot;
+}
+
 function App() {
   const [data, setData] = useState<WinnersData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [matchData, setMatchData] = useState<MatchData | null>(null);
+
+  useEffect(() => {
+    const es = new EventSource('http://localhost:3000/matchdata/stream');
+    es.onmessage = (e: MessageEvent) => setMatchData(JSON.parse(e.data));
+    es.onerror = () => setError('Lost connection to match data stream');
+    return () => es.close();
+  }, []);
 
   useEffect(() => {
     fetch('/winners')
@@ -50,7 +73,6 @@ function App() {
       .catch(err => setError(err.message));
   }, []);
 
-  
   useEffect(() => {
     const es = new EventSource('/stream');
 
@@ -72,7 +94,7 @@ function App() {
     </div>
   );
 
-  if (!data) return (
+  if (!data || !matchData) return (
     <div className="flex items-center justify-center h-screen text-gray-400 text-sm">
       Loading…
     </div>
@@ -94,6 +116,39 @@ function App() {
           {data.matchType} · {data.winners.length} winners
         </p>
       </div>
+
+      {/*don't use winners data!*/}
+      {(() => {
+        const sets = matchData.playerTeam.setScores
+          .map((a, i) => ({ a: a ?? 0, b: matchData.opponentTeam.setScores[i] ?? 0, tb: null }))
+          .filter((_, i) => matchData.playerTeam.setScores[i] !== null || matchData.opponentTeam.setScores[i] !== null);
+        return (
+          <>
+            <PlayerRow
+              who="a"
+              name={matchData.playerTeam.name}
+              seed={0}
+              country=""
+              sets={sets}
+              point={Number(matchData.playerTeam.gameScore) || 0}
+              isServing={false}
+              won={matchData.matchStatus === 'F'}
+              ballColor="yellow"
+            />
+            <PlayerRow
+              who="b"
+              name={matchData.opponentTeam.name}
+              seed={0}
+              country=""
+              sets={sets}
+              point={Number(matchData.opponentTeam.gameScore) || 0}
+              isServing={false}
+              won={matchData.matchStatus === 'F'}
+              ballColor="yellow"
+            />
+          </>
+        );
+      })()}
 
       {/* Cards */}
       <div className="flex flex-wrap gap-4">

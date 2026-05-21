@@ -10,6 +10,8 @@ export default defineConfig({
     proxy: {
       '/winners': 'http://localhost:3000',
       '/stream': 'http://localhost:3000',
+      '/matchdata': 'http://localhost:3000',
+      '/matchdata/stream': 'http://localhost:3000',
     },
   },
 })
