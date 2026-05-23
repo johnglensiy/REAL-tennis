@@ -66,6 +66,7 @@ function diffSnapshots(prev: MatchSnapshot, curr: MatchSnapshot): void {
 
 let lastSnapshot: MatchSnapshot | null = null;
 let matchDataSnapshot: MatchSnapshot | null = null;
+let allMatchSnapshots: MatchSnapshot[] | null = [];
 const matchDataClients = new Set<any>();
 
 
@@ -77,6 +78,8 @@ export function startWatchingAllMatchData() {
             const json = await response.json();
             const tournaments = json.Data?.LiveMatchesTournamentsOrdered ?? [];
 
+            allMatchSnapshots = [];
+
             for (const tournament of tournaments) {
                 const liveMatches = tournament.LiveMatches?.filter((m: any) => {
                     return m.MatchStatus == "P";
@@ -86,13 +89,14 @@ export function startWatchingAllMatchData() {
 
                 for (const lm of liveMatches) {
                     const liveSnapshot = extractSnapshot(lm);
+                    allMatchSnapshots?.push(liveSnapshot);
                     console.log(`[MATCHDATA] ${liveSnapshot.playerTeam.name} ${liveSnapshot.playerTeam.gameScore} | ${liveSnapshot.opponentTeam.name} ${liveSnapshot.opponentTeam.gameScore}`);
-
-                    // push this match's live snapshot to clients
-                    for (const client of matchDataClients) {
-                        client.write(`data: ${JSON.stringify(liveSnapshot)}\n\n`)
-                    }
                 }
+            }
+
+            // push all live match snapshots together to client
+            for (const client of matchDataClients) {
+                client.write(`data: ${JSON.stringify(allMatchSnapshots)}\n\n`);
             }
         } catch (e) {
 
@@ -181,9 +185,8 @@ router.get('/matchdata/stream', (req, res) => {
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('Access-Control-Allow-Origin', '*');
 
-    // send current snapshot immediately on connect so client doesn't wait
-    if (matchDataSnapshot) {
-        res.write(`data: ${JSON.stringify(matchDataSnapshot)}\n\n`);
+    if (allMatchSnapshots && allMatchSnapshots.length > 0) {
+        res.write(`data: ${JSON.stringify(allMatchSnapshots)}\n\n`);
     }
 
     matchDataClients.add(res);
