@@ -200,23 +200,4 @@ router.get('/winners', async (req, res) => {
     res.json(data);
 });
 
-router.get('/stream', (req, res) => {
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-
-    const send = (data: object) => res.write(`data: ${JSON.stringify(data)}\n\n`);
-
-    const { winners } = parseWinners(winnersRaw);
-    let i = 0;
-    const interval = setInterval(() => {
-        if (i < winners.length) {
-            send(winners[i]);
-            i++;
-        }
-    }, 2000);
-    req.on('close', () => clearInterval(interval));
-});
-
 export default router;
