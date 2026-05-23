@@ -27,8 +27,8 @@ export default function PlayerRow(props: PlayerRowProps) {
     const { who, name, seed, sets, point, gridCols, ballColor, isServing } = props
     return (
         <div 
-            className="grid items-center gap-6 px-4 py-3.5 "
-            style={{ gridTemplateColumns: gridCols || '20px 28px 1fr repeat(4, 28px) 44px' }}
+            className="grid items-center gap-6 px-4 py-3.5 outline"
+            style={{ gridTemplateColumns: gridCols || '20px 1fr repeat(4, 28px) 44px' }}
         >
             {/*serve indicator*/}
             <div className="flex justify-center">
@@ -37,8 +37,8 @@ export default function PlayerRow(props: PlayerRowProps) {
                     : <BallDot filled={false}></BallDot> }
             </div>
             {/*name*/}
-            <div className="">
-                {name} {seed}
+            <div className="font-bold text-black">
+                {name}{seed > 0 && <span className="text-xs text-gray-400 ml-1">({seed})</span>}
             </div>
 
             {/*games won per set */}
@@ -53,7 +53,7 @@ export default function PlayerRow(props: PlayerRowProps) {
                 <div key={i} className="mono" style={{
                     textAlign: 'center',
                     fontSize: 18, fontWeight: 600,
-                    color: isLeader ? 'var(--ink)' : (isCurrent ? 'var(--ink)' : 'var(--mute)'),
+                    color: isLeader || isCurrent ? '#000' : '#9ca3af',
                     position: 'relative',
                     lineHeight: 1,
                 }}>
@@ -72,7 +72,7 @@ export default function PlayerRow(props: PlayerRowProps) {
             <div className="mono" style={{
                 textAlign: 'center',
                 fontSize: 22, fontWeight: 700,
-                color: 'var(--ink)',
+                color: '#000',
                 background: isServing ? ballColor : 'transparent',
                 borderRadius: 4,
                 padding: '2px 4px',

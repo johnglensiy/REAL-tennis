@@ -54,11 +54,31 @@ interface MatchData {
   opponentTeam: TeamSnapshot;
 }
 
+const TEST_STATIC_MATCH_DATA: MatchData[] = [
+  {
+  matchId: '0000',
+  matchStatus: 'P',
+  playerTeam: { name: "Carlos Alcaraz", gameScore: "15", setScores: [1, 6, 1]},
+  opponentTeam: { name: "Jannik Sinner", gameScore: "15", setScores: [1, 6, 1]},
+  },
+  {
+    matchId: '0001',
+    matchStatus: 'P',
+    playerTeam: { name: "Alex De Minaur", gameScore: "15", setScores: [1, 6, 1]},
+    opponentTeam: { name: "Roger Federer", gameScore: "15", setScores: [1, 6, 1]},
+  },
+  {
+    matchId: '0002',
+    matchStatus: 'P',
+    playerTeam: { name: "Jack Draper", gameScore: "15", setScores: [1, 6, 1]},
+    opponentTeam: { name: "Arthur Fils", gameScore: "15", setScores: [1, 6, 1]},
+  }
+]
 
 function App() {
   const [data, setData] = useState<WinnersData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [matchData, setMatchData] = useState<MatchData[] | null>(null);
+  const [matchData, setMatchData] = useState<MatchData[]>(TEST_STATIC_MATCH_DATA);
 
   useEffect(() => {
     const es = new EventSource('matchdata/stream');
@@ -77,33 +97,32 @@ function App() {
   //     .catch(err => setError(err.message));
   // }, []);
 
-  if (error) return (
-    <div className="flex items-center justify-center h-screen text-gray-400 text-sm">
-      Error: {error}
-    </div>
-  );
+  // if (error) return (
+  //   <div className="flex items-center justify-center h-screen text-gray-400 text-sm">
+  //     Error: {error}
+  //   </div>
+  // );
 
   // if (!data) return <div>Loading winners...</div>;
-  if (!matchData) return <div>Loading match data...</div>;
 
   return (
     <div className="min-h-screen bg-gray-50 px-6 py-8 font-sans">
       {/* Title */}
-      {/* <div className="mb-7">
-        <h1 className="text-2xl font-bold text-gray-900">
-          {data.playerName}
-          <span className="text-base font-normal text-gray-400 mx-2">vs</span>
-          {data.opponentName}
-          {data.opponentSeed && (
+      <div className="mb-7 outline">
+        <h1 className="text-2xl font-bold !text-black">
+          Sinner
+          <span className="text-base font-normal text-black mx-2">vs</span>
+          Alcaraz
+          {/* {data.opponentSeed && (
             <span className="text-sm font-medium text-gray-400 ml-2">#{data.opponentSeed}</span>
-          )}
+          )} */}
         </h1>
         <p className="mt-1 text-sm text-gray-400">
-          {data.matchType} · {data.winners.length} winners
+          {/* {data.matchType} · {data.winners.length} winners */}
         </p>
-      </div> */}
+      </div>
 
-      {matchData.map(match => {
+      {matchData?.map(match => {
         const sets = match.playerTeam.setScores
           .map((a, i) => ({ a: a ?? 0, b: match.opponentTeam.setScores[i] ?? 0, tb: null }))
           .filter((_, i) => match.playerTeam.setScores[i] !== null || match.opponentTeam.setScores[i] !== null);
@@ -127,7 +146,7 @@ function App() {
               country=""
               sets={sets}
               point={Number(match.opponentTeam.gameScore) || 0}
-              isServing={false}
+              isServing={true}
               won={match.matchStatus === 'F'}
               ballColor="yellow"
             />
