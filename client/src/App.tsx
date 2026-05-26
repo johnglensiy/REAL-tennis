@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import WinnerCard from './components/WinnerCard';
 import PointCard from './components/PointCard';
 import PlayerRow from './components/PlayerRow';
 
