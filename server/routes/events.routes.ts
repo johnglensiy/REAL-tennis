@@ -4,28 +4,9 @@ import winnersRaw from '../data/winnersRaw.ts';
 import { parseWinners } from '../utils/parseWinners.ts';
 import pbp_tien_navone from '../data/tien-navone-pbp.json';
 
+import { SetScore, TeamSnapshot, MatchSnapshot } from '../types.ts';
+
 const router = Router();
-
-const TARGET_MATCH_ID = 'MS029'; // Djere vs Duckworth
-
-type SetScore = {
-    SetNumber: number;
-    SetScore: number | null;
-    TieBreakScore: number | null;
-};
-
-type TeamSnapshot = {
-    name: string;
-    gameScore: string;
-    setScores: (number | null)[];
-};
-
-type MatchSnapshot = {
-    matchId: string;
-    matchStatus: string;
-    playerTeam: TeamSnapshot;
-    opponentTeam: TeamSnapshot;
-};
 
 function extractSnapshot(match: any): MatchSnapshot {
     return {
@@ -137,35 +118,6 @@ export function startWatchingSingleMatchData() {
     });
 }
 
-export function startWatching() {
-    context.on('response', async (response) => {
-        if (!response.url().includes('livematches')) return;
-
-        try {
-            const json = await response.json();
-            const tournaments = json?.Data?.LiveMatchesTournamentsOrdered ?? [];
-
-            for (const tournament of tournaments) {
-                const match = tournament.LiveMatches?.find((m: any) => m.MatchId === TARGET_MATCH_ID);
-                if (!match) continue;
-
-                const snapshot = extractSnapshot(match);
-
-                if (!lastSnapshot) {
-                    console.log(`[WATCHING] ${snapshot.playerTeam.name} vs ${snapshot.opponentTeam.name}`);
-                    console.log(`[INITIAL] Sets: ${snapshot.playerTeam.setScores} | ${snapshot.opponentTeam.setScores}`);
-                } else {
-                    diffSnapshots(lastSnapshot, snapshot);
-                }
-
-                lastSnapshot = snapshot;
-            }
-        } catch (e) {
-            // response wasn't JSON, skip
-        }
-    });
-}
-
 function buildSnapshotFromPoint(pbpData: any, setIdx: number, gameIdx: number, point: any): MatchSnapshot {
     const playerData = pbpData.playerData;
 
@@ -246,7 +198,6 @@ function buildPoint(pbpData: any, setIdx: number, gameIdx: number, point: any): 
     };
 }
 
-
 function streamPointAndScheduleNext(
     res: any,
     pbpData: any,
@@ -319,6 +270,7 @@ router.get('/matchdata/mock-stream', (req, res) => {
     // push all live match snapshots together to client
 });
 
+// SSEs all live matches from the ATP live matches URL
 router.get('/matchdata/stream', (req, res) => {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
@@ -333,25 +285,9 @@ router.get('/matchdata/stream', (req, res) => {
     req.on('close', () => matchDataClients.delete(res));
 });
 
-router.get('/winners', async (req, res) => {
-    console.log("Routing to winners API");
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    const data = parseWinners(winnersRaw);
-    res.json(data);
-});
-
 router.get('/', async (req, res) => {
     console.log("Routing to events API");
-    res.json({ message: `Watching match ${TARGET_MATCH_ID}` });
-});
-
-router.get('/matchdata', (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    if (!matchDataSnapshot) {
-        res.status(404).json({ error: 'No match data yet — still waiting for livematches response' });
-        return;
-    }
-    res.json(matchDataSnapshot);
+    res.json({ message: `Watching match` });
 });
 
 export default router;
