@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import WinnerCard from './components/WinnerCard';
+import PointCard from './components/PointCard';
 import PlayerRow from './components/PlayerRow';
 
 import './App.css';
@@ -79,29 +80,25 @@ function App() {
   const [data, setData] = useState<WinnersData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [matchData, setMatchData] = useState<MatchData[]>(TEST_STATIC_MATCH_DATA);
+  const [pointData, setPointData] = useState<any | null>([]);
 
   useEffect(() => {
-    const es = new EventSource('matchdata/stream');
+    const es = new EventSource('matchdata/mock-stream');
     es.onmessage = (e: MessageEvent) => {
       const parsed = JSON.parse(e.data);
+      // setPointData(Array.isArray(parsed) ? parsed : [parsed]);
       setMatchData(Array.isArray(parsed) ? parsed : [parsed]);
+      setPointData(prev => [...prev, parsed]);
     };
     es.onerror = () => setError('Lost connection to match data stream');
     return () => es.close();
   }, []);
 
-  // useEffect(() => {
-  //   fetch('/winners')
-  //     .then(res => res.json())
-  //     .then(setData)
-  //     .catch(err => setError(err.message));
-  // }, []);
-
-  // if (error) return (
-  //   <div className="flex items-center justify-center h-screen text-gray-400 text-sm">
-  //     Error: {error}
-  //   </div>
-  // );
+  if (error) return (
+    <div className="flex items-center justify-center h-screen text-gray-400 text-sm">
+      Error: {error}
+    </div>
+  );
 
   // if (!data) return <div>Loading winners...</div>;
 
@@ -154,12 +151,11 @@ function App() {
         );
       })}
 
-      {/* Cards */}
-      {/* <div className="flex flex-wrap gap-4">
-        {data.winners.map(w => (
-          <WinnerCard key={w.pointId} winner={w} />
-        ))}
-      </div> */}
+      {pointData?.map(w => (
+        <PointCard key={w.pointId} point={{result: w.result, rallyLength: w.rallyLength}} />
+      ))
+      }
+
     </div>
   );
 }
