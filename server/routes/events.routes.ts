@@ -4,6 +4,8 @@ import winnersRaw from '../data/winnersRaw.ts';
 import { parseWinners } from '../utils/parseWinners.ts';
 import { streamPointAndScheduleNext } from '../utils/streamPointAndScheduleNext.ts';
 import pbp_tien_navone from '../data/tien-navone-pbp.json';
+import fs from 'fs';
+import path from 'path';
 
 import { allMatchSnapshots, matchDataClients } from '../index.ts';
 
@@ -20,7 +22,21 @@ router.get('/matchdata/mock-stream', (req, res) => {
     // in prod playwright will open the corresponding Matchbeats tab of the match
     // a mock stream (pbp) uses some of the example data
     // then streams it with a setInterval
-    streamPointAndScheduleNext(res, pbp_tien_navone, 0, 0, 0);
+
+    // for each data json in data folder trigger point stream loop
+    const dataDirPath = path.join(import.meta.dirname, '../data');
+
+    for (const file of fs.readdirSync(dataDirPath)) {
+        if (!file.endsWith('.json')) continue;
+
+        const fullPath = path.join(dataDirPath, file);
+        const json = JSON.parse(fs.readFileSync(fullPath, 'utf-8'));
+
+        console.log(`Triggering stream loop for ${json.playerData.tm1Ply1LastName} vs. ${json.playerData.tm2Ply1LastName}`)
+        streamPointAndScheduleNext(res, json, 0, 0, 0);
+    }
+
+    //streamPointAndScheduleNext(res, pbp_tien_navone, 0, 0, 0);
     req.on('close', () => matchDataClients.delete(res));    
 
     // example pbp http request 
