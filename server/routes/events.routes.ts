@@ -5,15 +5,11 @@ import { parseWinners } from '../utils/parseWinners.ts';
 import { streamPointAndScheduleNext } from '../utils/streamPointAndScheduleNext.ts';
 import pbp_tien_navone from '../data/tien-navone-pbp.json';
 
-import { matchDataClients } from '../index.ts';
+import { allMatchSnapshots, matchDataClients } from '../index.ts';
 
 import { SetScore, TeamSnapshot, MatchSnapshot } from '../types.ts';
 
 const router = Router();
-
-let lastSnapshot: MatchSnapshot | null = null;
-let matchDataSnapshot: MatchSnapshot | null = null;
-let allMatchSnapshots: MatchSnapshot[] | null = [];
 
 // dev-only endpoint for UI testing (when no live matches are playing)
 router.get('/matchdata/mock-stream', (req, res) => {
