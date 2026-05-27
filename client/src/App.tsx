@@ -5,7 +5,8 @@ import PlayerRow from './components/PlayerRow';
 import './App.css';
 
 interface TeamSnapshot {
-  name: string;
+  firstName: string;
+  lastName: string;
   gameScore: string;
   setScores: (number | null)[];
 }
@@ -101,7 +102,8 @@ function App() {
           <div key={entry.matchId} className="mb-6 w-100 outline">
             <PlayerRow
               who="a"
-              name={entry.playerTeam.name}
+              firstName={entry.playerTeam.firstName}
+              lastName={entry.playerTeam.lastName}
               seed={0}
               country=""
               sets={sets}
@@ -112,7 +114,8 @@ function App() {
             />
             <PlayerRow
               who="b"
-              name={entry.opponentTeam.name}
+              firstName={entry.opponentTeam.firstName}
+              lastName={entry.opponentTeam.lastName}
               seed={0}
               country=""
               sets={sets}

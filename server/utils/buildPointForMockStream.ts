@@ -25,12 +25,14 @@ export function buildPointForMockStream(pbpData: any, setIdx: number, gameIdx: n
         matchId: pbpData.matchId,
         matchStatus: pbpData.matchStatus,
         playerTeam: {
-            name: `${playerData.tm1Ply1FirstName} ${playerData.tm1Ply1LastName}`,
+            firstName: `${playerData.tm1Ply1FirstName}`,
+            lastName: `${playerData.tm1Ply1LastName}`,
             gameScore: point.tm1GameScore,
             setScores: tm1SetScores,
         },
         opponentTeam: {
-            name: `${playerData.tm2Ply1FirstName} ${playerData.tm2Ply1LastName}`,
+            firstName: `${playerData.tm2Ply1FirstName}`,
+            lastName: `${playerData.tm2Ply1LastName}`,
             gameScore: point.tm2GameScore,
             setScores: tm2SetScores,
         },

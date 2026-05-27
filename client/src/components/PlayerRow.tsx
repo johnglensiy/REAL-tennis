@@ -1,6 +1,7 @@
 interface PlayerRowProps {
     who: string;
-    name: string;
+    firstName: string;
+    lastName: string;
     seed: number;
     country: string;
     sets: { a: number; b: number; tb: [number, number] | null }[];
@@ -24,11 +25,11 @@ function BallDot({ filled = true, size = 10, style = {} }) {
 }
 
 export default function PlayerRow(props: PlayerRowProps) {
-    const { who, name, seed, sets, point, gridCols, ballColor, isServing } = props
+    const { who, firstName, lastName, seed, sets, point, gridCols, ballColor, isServing } = props
     return (
         <div 
             className="grid items-center gap-6 px-4 py-3.5 outline"
-            style={{ gridTemplateColumns: gridCols || '20px 1fr repeat(4, 28px) 44px' }}
+            style={{ gridTemplateColumns: gridCols || '20px 1fr repeat(4, 28px) 12px' }}
         >
             {/*serve indicator*/}
             <div className="flex justify-center">
@@ -37,8 +38,10 @@ export default function PlayerRow(props: PlayerRowProps) {
                     : <BallDot filled={false}></BallDot> }
             </div>
             {/*name*/}
-            <div className="font-bold text-black">
-                {name}{seed > 0 && <span className="text-xs text-gray-400 ml-1">({seed})</span>}
+            <div className="font-bold text-black truncate">
+                {firstName.split(' ').map(n => n[0] + '.').join('')}{' '}
+                {lastName.split(' ').map(w => w[0].toUpperCase() + w.slice(1).toLowerCase()).join(' ')}
+                {seed > 0 && <span className="text-xs text-gray-400 ml-1">({seed})</span>}
             </div>
 
             {/*games won per set */}
