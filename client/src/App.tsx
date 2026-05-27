@@ -10,46 +10,60 @@ interface TeamSnapshot {
   setScores: (number | null)[];
 }
 
-interface MatchData {
+interface MatchEntry {
   matchId: string;
   matchStatus: string;
   playerTeam: TeamSnapshot;
   opponentTeam: TeamSnapshot;
+  points: { result: string; rallyLength: number }[];
 }
 
-const TEST_STATIC_MATCH_DATA: MatchData[] = [
-  {
-  matchId: '0000',
-  matchStatus: 'P',
-  playerTeam: { name: "Carlos Alcaraz", gameScore: "15", setScores: [1, 6, 1]},
-  opponentTeam: { name: "Jannik Sinner", gameScore: "15", setScores: [1, 6, 1]},
-  },
-  {
-    matchId: '0001',
-    matchStatus: 'P',
-    playerTeam: { name: "Alex De Minaur", gameScore: "15", setScores: [1, 6, 1]},
-    opponentTeam: { name: "Roger Federer", gameScore: "15", setScores: [1, 6, 1]},
-  },
-  {
-    matchId: '0002',
-    matchStatus: 'P',
-    playerTeam: { name: "Jack Draper", gameScore: "15", setScores: [1, 6, 1]},
-    opponentTeam: { name: "Arthur Fils", gameScore: "15", setScores: [1, 6, 1]},
-  }
-]
+// const TEST_STATIC_MATCH_DATA: MatchData[] = [
+//   {
+//   matchId: '0000',
+//   matchStatus: 'P',
+//   playerTeam: { name: "Carlos Alcaraz", gameScore: "15", setScores: [1, 6, 1]},
+//   opponentTeam: { name: "Jannik Sinner", gameScore: "15", setScores: [1, 6, 1]},
+//   },
+//   {
+//     matchId: '0001',
+//     matchStatus: 'P',
+//     playerTeam: { name: "Alex De Minaur", gameScore: "15", setScores: [1, 6, 1]},
+//     opponentTeam: { name: "Roger Federer", gameScore: "15", setScores: [1, 6, 1]},
+//   },
+//   {
+//     matchId: '0002',
+//     matchStatus: 'P',
+//     playerTeam: { name: "Jack Draper", gameScore: "15", setScores: [1, 6, 1]},
+//     opponentTeam: { name: "Arthur Fils", gameScore: "15", setScores: [1, 6, 1]},
+//   }
+// ]
 
 function App() {
   const [error, setError] = useState<string | null>(null);
-  const [matchData, setMatchData] = useState<MatchData[]>(TEST_STATIC_MATCH_DATA);
-  const [pointData, setPointData] = useState<any | null>([]);
+  const [allMatchData, setAllMatchData] = useState<Map<string, MatchEntry>>(new Map());
 
   useEffect(() => {
     const es = new EventSource('matchdata/mock-stream');
     es.onmessage = (e: MessageEvent) => {
-      const parsed = JSON.parse(e.data);
-      // setPointData(Array.isArray(parsed) ? parsed : [parsed]);
-      setMatchData(Array.isArray(parsed) ? parsed : [parsed]);
-      setPointData(prev => [...prev, parsed]);
+      const json = JSON.parse(e.data);
+
+      setAllMatchData(prev => {
+        const nextMap = new Map(prev);
+        const entryToUpdate = nextMap.get(json.matchId);
+
+        nextMap.set(json.matchId, {
+          matchId: json.matchId,
+          matchStatus: json.matchStatus,
+          playerTeam: json.playerTeam,
+          opponentTeam: json.opponentTeam,
+          points: [...(entryToUpdate?.points ?? []), { result: json.result, rallyLength: json.rallyLength }]
+        });
+
+        return nextMap;
+      })
+
+      console.log(`Received update from match ${json.matchId} ${json.playerTeam} vs. ${json.opponentTeam}`);
     };
     es.onerror = () => setError('Lost connection to match data stream');
     return () => es.close();
@@ -68,9 +82,7 @@ function App() {
       {/* Title */}
       <div className="mb-7 outline">
         <h1 className="text-2xl font-bold !text-black">
-          Sinner
-          <span className="text-base font-normal text-black mx-2">vs</span>
-          Alcaraz
+          Roland Garros
           {/* {data.opponentSeed && (
             <span className="text-sm font-medium text-gray-400 ml-2">#{data.opponentSeed}</span>
           )} */}
@@ -80,42 +92,42 @@ function App() {
         </p>
       </div>
 
-      {matchData?.map(match => {
-        const sets = match.playerTeam.setScores
-          .map((a, i) => ({ a: a ?? 0, b: match.opponentTeam.setScores[i] ?? 0, tb: null }))
-          .filter((_, i) => match.playerTeam.setScores[i] !== null || match.opponentTeam.setScores[i] !== null);
+      <div className="flex flex-wrap gap-4">
+      {[...allMatchData.values()].map(entry => {
+        const sets = entry.playerTeam.setScores
+          .map((a, i) => ({ a: a ?? 0, b: entry.opponentTeam.setScores[i] ?? 0, tb: null }))
+          .filter((_, i) => entry.playerTeam.setScores[i] !== null || entry.opponentTeam.setScores[i] !== null);
         return (
-          <div key={match.matchId} className="mb-6">
+          <div key={entry.matchId} className="mb-6 w-100 outline">
             <PlayerRow
               who="a"
-              name={match.playerTeam.name}
+              name={entry.playerTeam.name}
               seed={0}
               country=""
               sets={sets}
-              point={Number(match.playerTeam.gameScore) || 0}
+              point={Number(entry.playerTeam.gameScore) || 0}
               isServing={false}
-              won={match.matchStatus === 'F'}
+              won={entry.matchStatus === 'F'}
               ballColor="yellow"
             />
             <PlayerRow
               who="b"
-              name={match.opponentTeam.name}
+              name={entry.opponentTeam.name}
               seed={0}
               country=""
               sets={sets}
-              point={Number(match.opponentTeam.gameScore) || 0}
+              point={Number(entry.opponentTeam.gameScore) || 0}
               isServing={true}
-              won={match.matchStatus === 'F'}
+              won={entry.matchStatus === 'F'}
               ballColor="yellow"
             />
+            {entry.points.map((p, i) => (
+              <PointCard key={i} point={{ result: p.result, rallyLength: p.rallyLength }} />
+            ))}
           </div>
         );
       })}
-
-      {pointData?.map(w => (
-        <PointCard key={w.pointId} point={{result: w.result, rallyLength: w.rallyLength}} />
-      ))
-      }
+      </div>
 
     </div>
   );
