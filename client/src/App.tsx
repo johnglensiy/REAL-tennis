@@ -7,6 +7,7 @@ import './App.css';
 interface TeamSnapshot {
   firstName: string;
   lastName: string;
+  seed: number;
   gameScore: string;
   setScores: (number | null)[];
 }
@@ -104,7 +105,7 @@ function App() {
               who="a"
               firstName={entry.playerTeam.firstName}
               lastName={entry.playerTeam.lastName}
-              seed={0}
+              seed={entry.playerTeam.seed}
               country=""
               sets={sets}
               point={Number(entry.playerTeam.gameScore) || 0}
@@ -116,7 +117,7 @@ function App() {
               who="b"
               firstName={entry.opponentTeam.firstName}
               lastName={entry.opponentTeam.lastName}
-              seed={0}
+              seed={entry.opponentTeam.seed}
               country=""
               sets={sets}
               point={Number(entry.opponentTeam.gameScore) || 0}
