@@ -1,6 +1,6 @@
 import express from 'express';
 import { chromium, Browser, BrowserContext, Page } from 'playwright';
-import eventsRoutes, { startWatchingSingleMatchData } from './routes/events.routes.ts';
+import eventsRoutes from './routes/events.routes.ts';
 
 import extractSnapshotFromMatchData from './utils/extractSnapshotFromMatchData.ts';
 import { SetScore, TeamSnapshot, MatchSnapshot } from './types.ts';
