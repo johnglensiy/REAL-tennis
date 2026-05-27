@@ -14,7 +14,7 @@ export let browser: Browser;
 export let context: BrowserContext;
 export let page: Page;
 
-export let matchDataClients: any;
+export const matchDataClients = new Set<any>();
 
 // launch playwright instance
 // current URL data source is ATP tour current scores home page (not all scores are from here btw)
