@@ -4,43 +4,6 @@ import PlayerRow from './components/PlayerRow';
 
 import './App.css';
 
-interface WinnerPoint {
-  pointId: string;
-  pointEndType: string;
-  serverName: string;
-  serverCountry: string;
-  receiverName: string;
-  receiverCountry: string;
-  serveSpeed: string;
-  serveType: string;
-  serveNumber: number;
-  hand: string;
-  placement: string;
-  court: string;
-  rallyLength: number;
-  shotSequence: string[];
-  set: number;
-  game: number;
-  point: number;
-  playerGameScore: string;
-  opponentGameScore: string;
-  netClearance: string;
-  ballHeightAtNet: string;
-  breakPoint: boolean;
-  isSetWinning: boolean;
-  isMatchWinning: boolean;
-}
-
-interface WinnersData {
-  matchType: string;
-  playerName: string;
-  playerCountry: string;
-  opponentName: string;
-  opponentCountry: string;
-  opponentSeed: string;
-  winners: WinnerPoint[];
-}
-
 interface TeamSnapshot {
   name: string;
   gameScore: string;
@@ -76,7 +39,6 @@ const TEST_STATIC_MATCH_DATA: MatchData[] = [
 ]
 
 function App() {
-  const [data, setData] = useState<WinnersData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [matchData, setMatchData] = useState<MatchData[]>(TEST_STATIC_MATCH_DATA);
   const [pointData, setPointData] = useState<any | null>([]);
