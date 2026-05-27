@@ -8,6 +8,7 @@ interface TeamSnapshot {
   firstName: string;
   lastName: string;
   seed: number;
+  isServer: boolean; 
   gameScore: string;
   setScores: (number | null)[];
 }
@@ -109,7 +110,7 @@ function App() {
               country=""
               sets={sets}
               point={Number(entry.playerTeam.gameScore) || 0}
-              isServing={false}
+              isServing={entry.playerTeam.isServer}
               won={entry.matchStatus === 'F'}
               ballColor="yellow"
             />
@@ -121,7 +122,7 @@ function App() {
               country=""
               sets={sets}
               point={Number(entry.opponentTeam.gameScore) || 0}
-              isServing={true}
+              isServing={entry.opponentTeam.isServer}
               won={entry.matchStatus === 'F'}
               ballColor="yellow"
             />
