@@ -25,7 +25,7 @@ page = await context.newPage();
 await page.goto("https://www.atptour.com/en/scores/current");
 
 // page handler that intercept any responses from webpage naturally polling
-let allMatchSnapshots: MatchSnapshot[];
+export let allMatchSnapshots: MatchSnapshot[];
 
 page.on('response', async (response) => {
     if (!response.url().includes('livematches')) return;
