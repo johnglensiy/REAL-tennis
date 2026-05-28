@@ -8,6 +8,7 @@ interface TeamSnapshot {
   firstName: string;
   lastName: string;
   seed: number;
+  country: string;
   isServer: boolean; 
   gameScore: string;
   setScores: (number | null)[];
@@ -41,6 +42,13 @@ interface MatchEntry {
 //     opponentTeam: { name: "Arthur Fils", gameScore: "15", setScores: [1, 6, 1]},
 //   }
 // ]
+const keyToPoint: Record<string, string> = {
+  'UE': 'Unforced Error',
+  'FE': 'Forced Error',
+  'W': 'Winner',
+  'A': 'Ace',
+  'DF': 'Double Fault'
+}
 
 function App() {
   const [error, setError] = useState<string | null>(null);
@@ -107,7 +115,7 @@ function App() {
               firstName={entry.playerTeam.firstName}
               lastName={entry.playerTeam.lastName}
               seed={entry.playerTeam.seed}
-              country=""
+              country={entry.playerTeam.country}
               sets={sets}
               point={Number(entry.playerTeam.gameScore) || 0}
               isServing={entry.playerTeam.isServer}
@@ -119,7 +127,7 @@ function App() {
               firstName={entry.opponentTeam.firstName}
               lastName={entry.opponentTeam.lastName}
               seed={entry.opponentTeam.seed}
-              country=""
+              country={entry.opponentTeam.country}
               sets={sets}
               point={Number(entry.opponentTeam.gameScore) || 0}
               isServing={entry.opponentTeam.isServer}
@@ -127,7 +135,7 @@ function App() {
               ballColor="yellow"
             />
             {entry.points.map((p, i) => (
-              <PointCard key={i} point={{ result: p.result, rallyLength: p.rallyLength }} />
+              <PointCard key={i} point={{ result: keyToPoint[p.result], rallyLength: p.rallyLength }} />
             ))}
           </div>
         );

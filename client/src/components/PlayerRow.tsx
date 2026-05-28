@@ -1,3 +1,43 @@
+import 'flag-icons/css/flag-icons.min.css';
+
+const alpha3ToAlpha2: Record<string, string> = {
+    ARG: 'ar', // Argentina
+    AUS: 'au', // Australia
+    AUT: 'at', // Austria
+    BEL: 'be', // Belgium
+    BRA: 'br', // Brazil
+    CAN: 'ca', // Canada
+    CHI: 'cl', // Chile
+    CHN: 'cn', // China
+    CRO: 'hr', // Croatia
+    CZE: 'cz', // Czech Republic
+    DEN: 'dk', // Denmark
+    ESP: 'es', // Spain
+    FRA: 'fr', // France
+    GBR: 'gb', // Great Britain
+    GER: 'de', // Germany
+    GRE: 'gr', // Greece
+    HUN: 'hu', // Hungary
+    ITA: 'it', // Italy
+    JPN: 'jp', // Japan
+    KAZ: 'kz', // Kazakhstan
+    KOR: 'kr', // South Korea
+    NED: 'nl', // Netherlands
+    NOR: 'no', // Norway
+    POL: 'pl', // Poland
+    POR: 'pt', // Portugal
+    ROU: 'ro', // Romania
+    RSA: 'za', // South Africa
+    RUS: 'ru', // Russia
+    SRB: 'rs', // Serbia
+    SUI: 'ch', // Switzerland
+    SVK: 'sk', // Slovakia
+    SWE: 'se', // Sweden
+    TPE: 'tw', // Chinese Taipei
+    UKR: 'ua', // Ukraine
+    USA: 'us', // United States
+};
+
 interface PlayerRowProps {
     who: string;
     firstName: string;
@@ -25,11 +65,11 @@ function BallDot({ filled = true, size = 10, style = {} }) {
 }
 
 export default function PlayerRow(props: PlayerRowProps) {
-    const { who, firstName, lastName, seed, sets, point, gridCols, ballColor, isServing } = props;
+    const { who, firstName, lastName, seed, country, sets, point, gridCols, ballColor, isServing } = props;
     return (
         <div 
             className="grid items-center gap-6 px-4 py-3.5 outline"
-            style={{ gridTemplateColumns: gridCols || `20px 1fr repeat(${sets.length}, 28px) 44px` }}
+            style={{ gridTemplateColumns: gridCols || `14px 2px 1fr repeat(${sets.length}, 14px) 44px` }}
         >
             {/*serve indicator*/}
             <div className="flex justify-center">
@@ -37,6 +77,8 @@ export default function PlayerRow(props: PlayerRowProps) {
                     ? <BallDot></BallDot>
                     : <BallDot filled={false}></BallDot> }
             </div>
+
+            <span className={`fi fi-${alpha3ToAlpha2[country]} text-xs rounded-[2px]`}></span>
 
             {/*name*/}
             <div className="font-bold text-black text-left truncate">
