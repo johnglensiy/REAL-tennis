@@ -101,7 +101,7 @@ function App() {
           .map((a, i) => ({ a: a ?? 0, b: entry.opponentTeam.setScores[i] ?? 0, tb: null }))
           .filter((_, i) => entry.playerTeam.setScores[i] !== null || entry.opponentTeam.setScores[i] !== null);
         return (
-          <div key={entry.matchId} className="mb-6 w-100 outline">
+          <div key={entry.matchId} className="mb-6 w-150 outline">
             <PlayerRow
               who="a"
               firstName={entry.playerTeam.firstName}
