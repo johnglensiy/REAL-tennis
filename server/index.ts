@@ -22,6 +22,13 @@ export const matchDataClients = new Set<any>();
 browser = await chromium.launch({ channel: 'chrome', headless: false })
 context = await browser.newContext();
 page = await context.newPage();
+// disable debugger traps (ATP Tour embeds `debugger;` statements that
+// pause execution whenever DevTools is open — disabling breakpoints via
+// CDP prevents that without affecting network interception)
+const cdpSession = await context.newCDPSession(page);
+await cdpSession.send('Debugger.enable');
+await cdpSession.send('Debugger.setBreakpointsActive', { active: false });
+
 await page.goto("https://www.atptour.com/en/scores/current");
 
 // page handler that intercept any responses from webpage naturally polling

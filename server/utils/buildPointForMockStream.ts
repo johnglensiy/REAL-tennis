@@ -42,6 +42,7 @@ export function buildPointForMockStream(pbpData: any, setIdx: number, gameIdx: n
             gameScore: point.tm2GameScore,
             setScores: tm2SetScores,
         },
+        scorer: point.scorer,
         result: point.result,
         rallyLength: point.tm1Rally + point.tm2Rally
     };

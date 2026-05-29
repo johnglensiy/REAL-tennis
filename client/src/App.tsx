@@ -4,7 +4,7 @@ import PlayerRow from './components/PlayerRow';
 
 import './App.css';
 
-interface TeamSnapshot {
+export interface TeamSnapshot {
   firstName: string;
   lastName: string;
   seed: number;
@@ -19,7 +19,7 @@ interface MatchEntry {
   matchStatus: string;
   playerTeam: TeamSnapshot;
   opponentTeam: TeamSnapshot;
-  points: { result: string; rallyLength: number }[];
+  points: { result: string; rallyLength: number, scorer: '1' | '2' }[];
 }
 
 // const TEST_STATIC_MATCH_DATA: MatchData[] = [
@@ -42,14 +42,6 @@ interface MatchEntry {
 //     opponentTeam: { name: "Arthur Fils", gameScore: "15", setScores: [1, 6, 1]},
 //   }
 // ]
-const keyToPoint: Record<string, string> = {
-  'UE': 'Unforced Error',
-  'FE': 'Forced Error',
-  'W': 'Winner',
-  'A': 'Ace',
-  'DF': 'Double Fault'
-}
-
 function App() {
   const [error, setError] = useState<string | null>(null);
   const [allMatchData, setAllMatchData] = useState<Map<string, MatchEntry>>(new Map());
@@ -68,7 +60,7 @@ function App() {
           matchStatus: json.matchStatus,
           playerTeam: json.playerTeam,
           opponentTeam: json.opponentTeam,
-          points: [...(entryToUpdate?.points ?? []), { result: json.result, rallyLength: json.rallyLength }]
+          points: [...(entryToUpdate?.points ?? []), { result: json.result, rallyLength: json.rallyLength, scorer: json.scorer }]
         });
 
         return nextMap;
@@ -135,7 +127,15 @@ function App() {
               ballColor="yellow"
             />
             {entry.points.map((p, i) => (
-              <PointCard key={i} point={{ result: keyToPoint[p.result], rallyLength: p.rallyLength }} />
+              <PointCard 
+                key={i} 
+                point={{ 
+                  result: p.result,
+                  rallyLength: p.rallyLength, 
+                  team1: entry.playerTeam,
+                  team2: entry.opponentTeam,
+                  scorer: p.scorer 
+                }} />
             ))}
           </div>
         );
