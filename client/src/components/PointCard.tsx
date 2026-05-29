@@ -63,64 +63,68 @@ export default function PointCard({ point }: PointCardProps) {
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-4 flex flex-col gap-3 shadow-sm w-full">
       <div style={{
-        display: 'grid',
-        gridTemplateColumns: '32px 1fr auto',
+        display: 'flex',
         gap: 12,
-        alignItems: 'center',
         padding: '12px 16px',
         borderBottom: '1px solid var(--stroke-soft)',
         background: 'var(--paper)',
+        outline: '1px solid black'
       }}>
-      {/* avatar placeholder */}
-      <div style={{
-        width: 32, height: 32, borderRadius: '50%',
-        border: '1px dashed var(--stroke)',
-        background: 'var(--bg)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontFamily: 'IBM Plex Mono, monospace',
-        fontSize: 11, color: 'var(--mute)', fontWeight: 600,
-      }}>who</div>
+        {/* avatar placeholder */}
+        <div style={{
+          width: 64, height: 64, borderRadius: '50%',
+          marginTop: 32,
+          border: '1px dashed var(--stroke)',
+          background: 'var(--bg)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontFamily: 'IBM Plex Mono, monospace',
+          fontSize: 11, color: 'var(--mute)', fontWeight: 600,
+        }}>who</div>
 
-      <div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 2 }}>
-          <span className="mono" style={{ fontSize: 10, color: 'var(--mute)', letterSpacing: '0.06em' }}>
-            S · G · time
-          </span>
-        </div>
-        <div style={{ fontSize: 13, color: 'var(--ink)', fontWeight: 500, textTransform: 'capitalize'}}>
-          {keyToPoint[point.result]}
-        </div>
-        <div style={{ fontSize: 13, color: 'var(--ink)', fontWeight: 500 }}>
-        {point.result == 'UE' || point.result == 'DF' ? 
-          `${loser.lastName} 3 unforced errors` :
-          `${winner.lastName} 3 winners`
-        }
-        </div>
-        <div style={{ fontSize: 13, color: 'var(--ink)', fontWeight: 500 }}>
-          Break point saved
-        </div>
+        <div className={'border'}>
+          {/* set game time header */}
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 2 }}>
+            <span className="mono" style={{ fontSize: 10, color: 'var(--mute)', letterSpacing: '0.06em' }}>
+              S · G · time
+            </span>
+          </div>
 
-        <div className="mono" style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: 1,
-          background: 'gray',
-        }}>
-          <StatCell label="Rally length">{point.rallyLength} shot{point.rallyLength > 1 ? 's' : ''}</StatCell>
-          <StatCell label="Stroke">NA</StatCell>
-          <StatCell label="Hand">Forehand</StatCell>
-          <StatCell label="Spin">0 RPM</StatCell>
-          <StatCell label="Height above ground">3.9 feet</StatCell>
-          <StatCell label="Speed">
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
-              <span style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
-                106 mph
-              </span>
-            </div>
-          </StatCell>
+          {/* headers */}
+          <div style={{ fontSize: 13, color: 'var(--ink)', fontWeight: 500, textTransform: 'capitalize'}}>
+            {keyToPoint[point.result]}
+          </div>
+          <div style={{ fontSize: 13, color: 'var(--ink)', fontWeight: 500 }}>
+          {point.result == 'UE' || point.result == 'DF' ? 
+            `${loser.lastName} 3 unforced errors` :
+            `${winner.lastName} 3 winners`
+          }
+          </div>
+          <div style={{ fontSize: 13, color: 'var(--ink)', fontWeight: 500 }}>
+            Break point saved
+          </div>
+
+          {/* stats grid */}
+          <div className="mono" style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: 1,
+            background: 'gray',
+          }}>
+            <StatCell label="Rally length">{point.rallyLength} shot{point.rallyLength > 1 ? 's' : ''}</StatCell>
+            <StatCell label="Stroke">NA</StatCell>
+            <StatCell label="Hand">Forehand</StatCell>
+            <StatCell label="Spin">0 RPM</StatCell>
+            <StatCell label="Height above ground">3.9 feet</StatCell>
+            <StatCell label="Speed">
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
+                <span style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
+                  106 mph
+                </span>
+              </div>
+            </StatCell>
+          </div>
         </div>
       </div>
-    </div>
     </div>
 
     
