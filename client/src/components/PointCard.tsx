@@ -1,4 +1,5 @@
 import type { TeamSnapshot } from "../App";
+import { useState } from "react";
 
 interface Point {
     result: string;
@@ -59,9 +60,9 @@ export default function PointCard({ point }: PointCardProps) {
   // const serveLabel = winner.serveNumber === 1 ? '1st' : '2nd';
   const winner = point.scorer == '1' ? point.team1 : point.team2;
   const loser = point.scorer == '1' ? point.team2 : point.team1;
+  const [dropdownToggle, setDropdownToggle] = useState<boolean>(false);
   
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4 flex flex-col gap-3 shadow-sm w-full">
       <div style={{
         display: 'flex',
         gap: 12,
@@ -85,23 +86,30 @@ export default function PointCard({ point }: PointCardProps) {
           {/* set game time header */}
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 2 }}>
             <span className="mono" style={{ fontSize: 10, color: 'var(--mute)', letterSpacing: '0.06em' }}>
+              {point.team1.setScores.length}
               S · G · time
             </span>
           </div>
 
           {/* headers */}
-          <div style={{ fontSize: 13, color: 'var(--ink)', fontWeight: 500, textTransform: 'capitalize'}}>
-            {keyToPoint[point.result]}
+          <div>
+            <div style={{ fontSize: 16, color: 'var(--ink)', fontWeight: 500, textTransform: 'capitalize'}}>
+              {keyToPoint[point.result]}
+            </div>
+            <div style={{ fontSize: 13, color: 'var(--ink)', fontWeight: 500 }}>
+            {point.result == 'UE' || point.result == 'DF' ? 
+              `${loser.lastName} 3 unforced errors` :
+              `${winner.lastName} 3 winners`
+            }
+            </div>
+            <div style={{ fontSize: 13, color: 'var(--ink)', fontWeight: 500 }}>
+              Break point saved
+            </div>
           </div>
-          <div style={{ fontSize: 13, color: 'var(--ink)', fontWeight: 500 }}>
-          {point.result == 'UE' || point.result == 'DF' ? 
-            `${loser.lastName} 3 unforced errors` :
-            `${winner.lastName} 3 winners`
-          }
-          </div>
-          <div style={{ fontSize: 13, color: 'var(--ink)', fontWeight: 500 }}>
-            Break point saved
-          </div>
+
+          <button onClick={() => setDropdownToggle(!dropdownToggle)}>
+            click
+          </button>
 
           {/* stats grid */}
           <div className="mono" style={{
@@ -109,6 +117,9 @@ export default function PointCard({ point }: PointCardProps) {
             gridTemplateColumns: 'repeat(3, 1fr)',
             gap: 1,
             background: 'gray',
+            maxHeight: dropdownToggle ? 500 : 0,
+            overflow: 'hidden',
+            transition: 'max-height 0.3s ease',
           }}>
             <StatCell label="Rally length">{point.rallyLength} shot{point.rallyLength > 1 ? 's' : ''}</StatCell>
             <StatCell label="Stroke">NA</StatCell>
@@ -125,9 +136,6 @@ export default function PointCard({ point }: PointCardProps) {
           </div>
         </div>
       </div>
-    </div>
-
-    
   );
 }
 
