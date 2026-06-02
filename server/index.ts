@@ -19,7 +19,7 @@ export const matchDataClients = new Set<any>();
 // launch playwright instance
 // current URL data source is ATP tour current scores home page (not all scores are from here btw)
 // eventually should be loaded on a docker instance so it's not reliant on my computer running
-browser = await chromium.launch({ channel: 'chrome', headless: false })
+browser = await chromium.launch({ channel: 'chrome', headless: true })
 context = await browser.newContext();
 page = await context.newPage();
 // disable debugger traps (ATP Tour embeds `debugger;` statements that
