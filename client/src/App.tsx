@@ -5,6 +5,7 @@ import PlayerRow from './components/PlayerRow';
 import './App.css';
 
 export interface TeamSnapshot {
+  atpId: string;
   firstName: string;
   lastName: string;
   seed: number;

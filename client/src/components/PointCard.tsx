@@ -80,9 +80,14 @@ export default function PointCard({ point }: PointCardProps) {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontFamily: 'IBM Plex Mono, monospace',
           fontSize: 11, color: 'var(--mute)', fontWeight: 600,
-        }}>who</div>
+        }}>
+          {point.result == 'UE' || point.result == 'DF' ?
+            <img src={`https://www.atptour.com/-/media/alias/player-headshot/${loser.atpId}`} alt={loser.firstName} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', borderRadius: '50%' }} /> :
+            <img src={`https://www.atptour.com/-/media/alias/player-headshot/${winner.atpId}`} alt={winner.firstName} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', borderRadius: '50%' }} />
+          }
+        </div>
 
-        <div className={'border'}>
+        <div>
           {/* set game time header */}
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 2 }}>
             <span className="mono" style={{ fontSize: 10, color: 'var(--mute)', letterSpacing: '0.06em' }}>
@@ -97,10 +102,10 @@ export default function PointCard({ point }: PointCardProps) {
               {keyToPoint[point.result]}
             </div>
             <div style={{ fontSize: 13, color: 'var(--ink)', fontWeight: 500 }}>
-            {point.result == 'UE' || point.result == 'DF' ? 
-              `${loser.lastName} 3 unforced errors` :
-              `${winner.lastName} 3 winners`
-            }
+              {point.result == 'UE' || point.result == 'DF' ? 
+                `${loser.lastName} 3 unforced errors` :
+                `${winner.lastName} 3 winners`
+              }
             </div>
             <div style={{ fontSize: 13, color: 'var(--ink)', fontWeight: 500 }}>
               Break point saved
