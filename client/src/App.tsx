@@ -126,7 +126,7 @@ function App() {
               won={entry.matchStatus === 'F'}
               ballColor="yellow"
             />
-            <div style={{ display: 'flex', flexDirection: 'column-reverse' }}>
+            <div style={{ display: 'flex', flexDirection: 'column-reverse', overflow: 'hidden' }}>
               {entry.points.map((p, _) => (
                 <PointCard 
                   key={p.id} 
