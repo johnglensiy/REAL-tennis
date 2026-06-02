@@ -2,11 +2,11 @@ import type { TeamSnapshot } from "../App";
 import { useState } from "react";
 
 interface Point {
-    result: string;
-    rallyLength: number;
-    team1: TeamSnapshot;
-    team2: TeamSnapshot;
-    scorer: string;
+  result: string;
+  rallyLength: number;
+  team1: TeamSnapshot;
+  team2: TeamSnapshot;
+  scorer: string;
 }
 
 interface PointCardProps {
@@ -63,7 +63,7 @@ export default function PointCard({ point }: PointCardProps) {
   const [dropdownToggle, setDropdownToggle] = useState<boolean>(false);
   
   return (
-      <div style={{
+      <div className="animate-[slide-in_1s_ease]" style={{
         display: 'flex',
         gap: 12,
         padding: '12px 16px',

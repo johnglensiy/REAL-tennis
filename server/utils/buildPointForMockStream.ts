@@ -22,6 +22,7 @@ export function buildPointForMockStream(pbpData: any, setIdx: number, gameIdx: n
     }
 
     return {
+        updateId: point.pointId,
         matchId: pbpData.matchId,
         matchStatus: pbpData.matchStatus,
         playerTeam: {

@@ -19,7 +19,7 @@ interface MatchEntry {
   matchStatus: string;
   playerTeam: TeamSnapshot;
   opponentTeam: TeamSnapshot;
-  points: { result: string; rallyLength: number, scorer: '1' | '2' }[];
+  points: { id: string; result: string; rallyLength: number, scorer: '1' | '2' }[];
 }
 
 // const TEST_STATIC_MATCH_DATA: MatchData[] = [
@@ -60,7 +60,7 @@ function App() {
           matchStatus: json.matchStatus,
           playerTeam: json.playerTeam,
           opponentTeam: json.opponentTeam,
-          points: [...(entryToUpdate?.points ?? []), { result: json.result, rallyLength: json.rallyLength, scorer: json.scorer }]
+          points: [...(entryToUpdate?.points ?? []), { id: json.pointId,result: json.result, rallyLength: json.rallyLength, scorer: json.scorer }]
         });
 
         return nextMap;
@@ -126,17 +126,19 @@ function App() {
               won={entry.matchStatus === 'F'}
               ballColor="yellow"
             />
-            {entry.points.map((p, i) => (
-              <PointCard 
-                key={i} 
-                point={{ 
-                  result: p.result,
-                  rallyLength: p.rallyLength, 
-                  team1: entry.playerTeam,
-                  team2: entry.opponentTeam,
-                  scorer: p.scorer 
-                }} />
-            ))}
+            <div style={{ display: 'flex', flexDirection: 'column-reverse' }}>
+              {entry.points.map((p, _) => (
+                <PointCard 
+                  key={p.id} 
+                  point={{ 
+                    result: p.result,
+                    rallyLength: p.rallyLength, 
+                    team1: entry.playerTeam,
+                    team2: entry.opponentTeam,
+                    scorer: p.scorer 
+                  }} />
+              ))}
+            </div>
           </div>
         );
       })}
