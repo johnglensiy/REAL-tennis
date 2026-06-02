@@ -7,29 +7,12 @@ interface Point {
   team1: TeamSnapshot;
   team2: TeamSnapshot;
   scorer: string;
+  timeElapsed: number;
 }
 
 interface PointCardProps {
   point: Point;
 }
-
-const shotLabel: Record<string, string> = {
-  ForeHand: 'FH',
-  BackHand: 'BH',
-  NA: 'Sv',
-};
-
-const shotChipClass: Record<string, string> = {
-  ForeHand: 'bg-blue-100 text-blue-600',
-  BackHand: 'bg-violet-100 text-violet-600',
-  NA: 'bg-gray-100 text-gray-500',
-};
-
-const handClass: Record<string, string> = {
-  ForeHand: 'text-blue-600',
-  BackHand: 'text-violet-600',
-  NA: 'text-gray-500',
-};
 
 const keyToPoint: Record<string, string> = {
   'UE': 'Unforced Error',
@@ -61,6 +44,8 @@ export default function PointCard({ point }: PointCardProps) {
   const winner = point.scorer == '1' ? point.team1 : point.team2;
   const loser = point.scorer == '1' ? point.team2 : point.team1;
   const [dropdownToggle, setDropdownToggle] = useState<boolean>(false);
+  const numSets = winner.setScores.length;
+  const numGames = winner.setScores[winner.setScores.length - 1] + loser.setScores[loser.setScores.length - 1] + 1;
   
   return (
       <div className="animate-[slide-in_1s_ease]" style={{
@@ -87,12 +72,13 @@ export default function PointCard({ point }: PointCardProps) {
           }
         </div>
 
-        <div>
+        <div >
           {/* set game time header */}
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 2 }}>
             <span className="mono" style={{ fontSize: 10, color: 'var(--mute)', letterSpacing: '0.06em' }}>
-              {point.team1.setScores.length}
-              S · G · time
+              {`S${numSets} · 
+                G${numGames} · 
+                ${Math.floor((Number(point.timeElapsed) || 0) / 3600)}:${Math.floor(((Number(point.timeElapsed) || 0) % 3600) / 60).toString().padStart(2, '0')}`}
             </span>
           </div>
 

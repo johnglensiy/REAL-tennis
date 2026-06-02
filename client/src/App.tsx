@@ -20,7 +20,7 @@ interface MatchEntry {
   matchStatus: string;
   playerTeam: TeamSnapshot;
   opponentTeam: TeamSnapshot;
-  points: { id: string; result: string; rallyLength: number, scorer: '1' | '2' }[];
+  points: { id: string; result: string; rallyLength: number, scorer: '1' | '2', timeElapsed: number }[];
 }
 
 // const TEST_STATIC_MATCH_DATA: MatchData[] = [
@@ -61,7 +61,14 @@ function App() {
           matchStatus: json.matchStatus,
           playerTeam: json.playerTeam,
           opponentTeam: json.opponentTeam,
-          points: [...(entryToUpdate?.points ?? []), { id: json.pointId,result: json.result, rallyLength: json.rallyLength, scorer: json.scorer }]
+          points: [...(entryToUpdate?.points ?? []), 
+            { 
+              id: json.pointId,
+              result: json.result,
+              rallyLength: json.rallyLength, 
+              scorer: json.scorer,
+              timeElapsed: json.timeElapsedInSeconds
+            }]
         });
 
         return nextMap;
@@ -136,7 +143,8 @@ function App() {
                     rallyLength: p.rallyLength, 
                     team1: entry.playerTeam,
                     team2: entry.opponentTeam,
-                    scorer: p.scorer 
+                    scorer: p.scorer,
+                    timeElapsed: p.timeElapsed
                   }} />
               ))}
             </div>
