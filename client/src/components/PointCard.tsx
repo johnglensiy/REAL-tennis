@@ -2,6 +2,10 @@ import type { TeamSnapshot } from "../App";
 import { useState } from "react";
 
 interface Point {
+  playerGameScore: number,
+  playerSetScores: number[] | null,
+  opponentGameScore: number,
+  opponentSetScores: number[] | null,
   result: string;
   rallyLength: number;
   team1: TeamSnapshot;
@@ -44,8 +48,8 @@ export default function PointCard({ point }: PointCardProps) {
   const winner = point.scorer == '1' ? point.team1 : point.team2;
   const loser = point.scorer == '1' ? point.team2 : point.team1;
   const [dropdownToggle, setDropdownToggle] = useState<boolean>(false);
-  const numSets = winner.setScores.length;
-  const numGames = winner.setScores[winner.setScores.length - 1] + loser.setScores[loser.setScores.length - 1] + 1;
+  const numSets = point.playerSetScores.length;
+  const numGames = point.playerSetScores[point.playerSetScores.length - 1] + point.opponentSetScores[point.opponentSetScores.length - 1] + 1;
   
   return (
       <div className="animate-[slide-in_1s_ease]" style={{

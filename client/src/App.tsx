@@ -20,29 +20,19 @@ interface MatchEntry {
   matchStatus: string;
   playerTeam: TeamSnapshot;
   opponentTeam: TeamSnapshot;
-  points: { id: string; result: string; rallyLength: number, scorer: '1' | '2', timeElapsed: number }[];
+  points: { 
+    id: string,
+    playerGameScore: number,
+    playerSetScores: number[] | null,
+    opponentGameScore: number,
+    opponentSetScores: number[] | null,
+    result: string,
+    rallyLength: number,
+    scorer: '1' | '2', 
+    timeElapsed: number 
+  }[];
 }
 
-// const TEST_STATIC_MATCH_DATA: MatchData[] = [
-//   {
-//   matchId: '0000',
-//   matchStatus: 'P',
-//   playerTeam: { name: "Carlos Alcaraz", gameScore: "15", setScores: [1, 6, 1]},
-//   opponentTeam: { name: "Jannik Sinner", gameScore: "15", setScores: [1, 6, 1]},
-//   },
-//   {
-//     matchId: '0001',
-//     matchStatus: 'P',
-//     playerTeam: { name: "Alex De Minaur", gameScore: "15", setScores: [1, 6, 1]},
-//     opponentTeam: { name: "Roger Federer", gameScore: "15", setScores: [1, 6, 1]},
-//   },
-//   {
-//     matchId: '0002',
-//     matchStatus: 'P',
-//     playerTeam: { name: "Jack Draper", gameScore: "15", setScores: [1, 6, 1]},
-//     opponentTeam: { name: "Arthur Fils", gameScore: "15", setScores: [1, 6, 1]},
-//   }
-// ]
 function App() {
   const [error, setError] = useState<string | null>(null);
   const [allMatchData, setAllMatchData] = useState<Map<string, MatchEntry>>(new Map());
@@ -64,6 +54,10 @@ function App() {
           points: [...(entryToUpdate?.points ?? []), 
             { 
               id: json.pointId,
+              playerGameScore: json.playerGameScore,
+              playerSetScores: json.playerSetScores,
+              opponentGameScore: json.opponentGameScore,
+              opponentSetScores: json.opponentSetScores,
               result: json.result,
               rallyLength: json.rallyLength, 
               scorer: json.scorer,
@@ -71,6 +65,8 @@ function App() {
             }]
         });
 
+        const updated = nextMap.get(json.matchId);
+        console.log(`[${json.matchId}] points array:`, updated?.points);
         return nextMap;
       })
 
@@ -139,6 +135,10 @@ function App() {
                 <PointCard 
                   key={p.id} 
                   point={{ 
+                    playerGameScore: p.playerGameScore,
+                    playerSetScores: p.playerSetScores,
+                    opponentGameScore: p.opponentGameScore,
+                    opponentSetScores: p.opponentSetScores,
                     result: p.result,
                     rallyLength: p.rallyLength, 
                     team1: entry.playerTeam,

@@ -21,8 +21,6 @@ export function buildPointForMockStream(pbpData: any, setIdx: number, gameIdx: n
         tm2SetScores.push(currentSetGames[gameIdx - 1].tm2SetScore);
     }
 
-    console.log('tm1SetScores:', tm1SetScores, tm1SetScores.length, 'tm2SetScores:', tm2SetScores, tm2SetScores.length);
-
     return {
         updateId: point.pointId,
         matchId: pbpData.matchId,
@@ -50,6 +48,10 @@ export function buildPointForMockStream(pbpData: any, setIdx: number, gameIdx: n
         scorer: point.scorer,
         result: point.result,
         rallyLength: point.tm1Rally + point.tm2Rally,
-        timeElapsedInSeconds: point.currentMatchDuration
+        timeElapsedInSeconds: point.currentMatchDuration,
+        playerGameScore: point.tm1GameScore,
+        playerSetScores: tm1SetScores,
+        opponentGameScores: point.tm2GameScore,
+        opponentSetScores: tm2SetScores
     };
 }
