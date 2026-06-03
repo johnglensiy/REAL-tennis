@@ -135,14 +135,4 @@ export default function PointCard({ point }: PointCardProps) {
         </div>
       </div>
   );
-}
-
-function Stat({ label, value, valueClass = 'text-gray-800' }: { label: string; value: string | number; valueClass?: string }) {
-  return (
-    <div className="flex flex-col gap-0.5">
-      <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">{label}</span>
-      <span className={`text-xs font-semibold ${valueClass}`}>{value}</span>
-    </div>
-  );
-}
-  
+}  

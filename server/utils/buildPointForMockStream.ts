@@ -25,10 +25,20 @@ export function buildPointForMockStream(pbpData: any, setIdx: number, gameIdx: n
     // no, invariant is that these are PAST games
     // let PlayerRow locally handle display of game completion
 
+    // actually no, tennis logic should not determine whether of game is completed
+    // compute here and pass as fields
+    const isGameComplete = point.tm1GameScore == 'GAME' || point.tm2GameScore == 'GAME';
+    const isLastGameOfSet = gameIdx === currentSetGames.length - 1;
+    const isSetComplete = isGameComplete && isLastGameOfSet;
+    const isMatchComplete = isSetComplete && setIdx === pbpData.setData.length - 1;
+
     return {
         updateId: point.pointId,
         matchId: pbpData.matchId,
         matchStatus: pbpData.matchStatus,
+        isGameComplete,
+        isSetComplete,
+        isMatchComplete,
         playerTeam: {
             atpId: playerData.tm1Ply1Id,
             firstName: `${playerData.tm1Ply1FirstName}`,

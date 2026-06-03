@@ -46,5 +46,5 @@ export function streamPointAndScheduleNext(
 
     setTimeout(() => {
         streamPointAndScheduleNext(res, pbpData, nextSet, nextGame, nextPoint);
-    }, Math.max(delay, 0)); // guard against 0 or negative diffs
+    }, Math.max(delay / 4, 0)); // guard against 0 or negative diffs
 }
