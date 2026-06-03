@@ -21,6 +21,10 @@ export function buildPointForMockStream(pbpData: any, setIdx: number, gameIdx: n
         tm2SetScores.push(currentSetGames[gameIdx - 1].tm2SetScore);
     }
 
+    // if last point of game happened should new updated set scores be pushed?
+    // no, invariant is that these are PAST games
+    // let PlayerRow locally handle display of game completion
+
     return {
         updateId: point.pointId,
         matchId: pbpData.matchId,
@@ -51,7 +55,7 @@ export function buildPointForMockStream(pbpData: any, setIdx: number, gameIdx: n
         timeElapsedInSeconds: point.currentMatchDuration,
         playerGameScore: point.tm1GameScore,
         playerSetScores: tm1SetScores,
-        opponentGameScores: point.tm2GameScore,
+        opponentGameScore: point.tm2GameScore,
         opponentSetScores: tm2SetScores
     };
 }

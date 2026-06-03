@@ -45,7 +45,7 @@ interface PlayerRowProps {
     seed: number;
     country: string;
     sets: { a: number; b: number; tb: [number, number] | null }[];
-    point: number;
+    point: number | string;
     isServing: boolean;
     won: boolean;
     ballColor: string;

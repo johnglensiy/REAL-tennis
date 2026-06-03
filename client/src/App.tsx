@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import PointCard from './components/PointCard';
-import PlayerRow from './components/PlayerRow';
+import Scoreboard from './components/Scoreboard';
 
 import './App.css';
 
@@ -101,34 +101,12 @@ function App() {
 
       <div className="flex flex-wrap gap-4">
       {[...allMatchData.values()].map(entry => {
-        const sets = entry.playerTeam.setScores
-          .map((a, i) => ({ a: a ?? 0, b: entry.opponentTeam.setScores[i] ?? 0, tb: null }))
-          .filter((_, i) => entry.playerTeam.setScores[i] !== null || entry.opponentTeam.setScores[i] !== null);
         return (
           <div key={entry.matchId} className="mb-6 w-150 outline">
-            <PlayerRow
-              who="a"
-              firstName={entry.playerTeam.firstName}
-              lastName={entry.playerTeam.lastName}
-              seed={entry.playerTeam.seed}
-              country={entry.playerTeam.country}
-              sets={sets}
-              point={Number(entry.playerTeam.gameScore) || 0}
-              isServing={entry.playerTeam.isServer}
-              won={entry.matchStatus === 'F'}
-              ballColor="yellow"
-            />
-            <PlayerRow
-              who="b"
-              firstName={entry.opponentTeam.firstName}
-              lastName={entry.opponentTeam.lastName}
-              seed={entry.opponentTeam.seed}
-              country={entry.opponentTeam.country}
-              sets={sets}
-              point={Number(entry.opponentTeam.gameScore) || 0}
-              isServing={entry.opponentTeam.isServer}
-              won={entry.matchStatus === 'F'}
-              ballColor="yellow"
+            <Scoreboard
+              playerTeam={entry.playerTeam}
+              opponentTeam={entry.opponentTeam}
+              matchStatus={entry.matchStatus}
             />
             <div style={{ display: 'flex', flexDirection: 'column-reverse', overflow: 'hidden' }}>
               {entry.points.map((p, _) => (

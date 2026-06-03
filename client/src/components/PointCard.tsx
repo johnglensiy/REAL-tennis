@@ -70,7 +70,7 @@ export default function PointCard({ point }: PointCardProps) {
           fontFamily: 'IBM Plex Mono, monospace',
           fontSize: 11, color: 'var(--mute)', fontWeight: 600,
         }}>
-          {point.result == 'UE' || point.result == 'DF' ?
+          {point.result == 'UE' || point.result == 'DF' || point.result == 'FE' ?
             <img src={`https://www.atptour.com/-/media/alias/player-headshot/${loser.atpId}`} alt={loser.firstName} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', borderRadius: '50%' }} /> :
             <img src={`https://www.atptour.com/-/media/alias/player-headshot/${winner.atpId}`} alt={winner.firstName} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', borderRadius: '50%' }} />
           }
@@ -89,10 +89,13 @@ export default function PointCard({ point }: PointCardProps) {
           {/* headers */}
           <div>
             <div style={{ fontSize: 16, color: 'var(--ink)', fontWeight: 500, textTransform: 'capitalize'}}>
+              {`${point.playerGameScore} - ${point.opponentGameScore}`}
+            </div>
+            <div style={{ fontSize: 16, color: 'var(--ink)', fontWeight: 500, textTransform: 'capitalize'}}>
               {keyToPoint[point.result]}
             </div>
             <div style={{ fontSize: 13, color: 'var(--ink)', fontWeight: 500 }}>
-              {point.result == 'UE' || point.result == 'DF' ? 
+              {point.result == 'UE' || point.result == 'DF' || point.result == 'FE' ? 
                 `${loser.lastName} 3 unforced errors` :
                 `${winner.lastName} 3 winners`
               }
