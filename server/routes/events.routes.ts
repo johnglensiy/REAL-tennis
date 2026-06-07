@@ -7,9 +7,7 @@ import pbp_tien_navone from '../data/tien-navone-pbp.json';
 import fs from 'fs';
 import path from 'path';
 
-import { allMatchSnapshots, matchDataClients } from '../index.ts';
-
-import { SetScore, TeamSnapshot, MatchSnapshot } from '../types.ts';
+import { matchDataClients } from '../index.ts';
 
 const router = Router();
 
@@ -58,9 +56,9 @@ router.get('/matchdata/stream', (req, res) => {
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('Access-Control-Allow-Origin', '*');
 
-    if (allMatchSnapshots && allMatchSnapshots.length > 0) {
-        res.write(`data: ${JSON.stringify(allMatchSnapshots)}\n\n`);
-    }
+    // if (allMatchSnapshots && allMatchSnapshots.length > 0) {
+    //     res.write(`data: ${JSON.stringify(allMatchSnapshots)}\n\n`);
+    // }
 
     matchDataClients.add(res);
     req.on('close', () => matchDataClients.delete(res));

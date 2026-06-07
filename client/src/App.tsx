@@ -52,51 +52,53 @@ function App() {
   const [allMatchData, setAllMatchData] = useState<Map<string, MatchEntry>>(new Map());
 
   useEffect(() => {
-    const es = new EventSource('matchdata/mock-stream');
+    const es = new EventSource('matchdata/stream');
     es.onmessage = (e: MessageEvent) => {
-      const json = JSON.parse(e.data);
+      const points: any[] = JSON.parse(e.data);
 
       setAllMatchData(prev => {
         const nextMap = new Map(prev);
-        const entryToUpdate = nextMap.get(json.matchId);
 
-        const newEvents: MatchEvent[] = [...(entryToUpdate?.events ?? [])];
+        for (const json of points) {
+          const entryToUpdate = nextMap.get(json.matchId);
+          const newEvents: MatchEvent[] = [...(entryToUpdate?.events ?? [])];
 
-        newEvents.push({
-          type: 'point',
-          id: json.pointId,
-          playerGameScore: json.playerGameScore,
-          playerSetScores: json.playerSetScores,
-          opponentGameScore: json.opponentGameScore,
-          opponentSetScores: json.opponentSetScores,
-          result: json.result,
-          rallyLength: json.rallyLength,
-          scorer: json.scorer,
-          timeElapsed: json.timeElapsedInSeconds,
-        });
+          newEvents.push({
+            type: 'point',
+            id: json.pointId,
+            playerGameScore: json.playerGameScore,
+            playerSetScores: json.playerSetScores,
+            opponentGameScore: json.opponentGameScore,
+            opponentSetScores: json.opponentSetScores,
+            result: json.result,
+            rallyLength: json.rallyLength,
+            scorer: json.scorer,
+            timeElapsed: json.timeElapsedInSeconds,
+          });
 
-        if (json.isMatchComplete) {
-          newEvents.push({ type: 'match', id: `${json.pointId}-match`, winner: json.scorer, playerSetScores: json.playerSetScores, opponentSetScores: json.opponentSetScores, timeElapsed: json.timeElapsedInSeconds });
-        } else if (json.isSetComplete) {
-          newEvents.push({ type: 'set', id: `${json.pointId}-set`, winner: json.scorer, playerSetScores: json.playerSetScores, opponentSetScores: json.opponentSetScores, timeElapsed: json.timeElapsedInSeconds });
-        } else if (json.isGameComplete) {
-          newEvents.push({ type: 'game', id: `${json.pointId}-game`, winner: json.scorer, playerSetScores: json.playerSetScores, opponentSetScores: json.opponentSetScores, timeElapsed: json.timeElapsedInSeconds });
+          if (json.isMatchComplete) {
+            newEvents.push({ type: 'match', id: `${json.pointId}-match`, winner: json.scorer, playerSetScores: json.playerSetScores, opponentSetScores: json.opponentSetScores, timeElapsed: json.timeElapsedInSeconds });
+          } else if (json.isSetComplete) {
+            newEvents.push({ type: 'set', id: `${json.pointId}-set`, winner: json.scorer, playerSetScores: json.playerSetScores, opponentSetScores: json.opponentSetScores, timeElapsed: json.timeElapsedInSeconds });
+          } else if (json.isGameComplete) {
+            newEvents.push({ type: 'game', id: `${json.pointId}-game`, winner: json.scorer, playerSetScores: json.playerSetScores, opponentSetScores: json.opponentSetScores, timeElapsed: json.timeElapsedInSeconds });
+          }
+
+          nextMap.set(json.matchId, {
+            matchId: json.matchId,
+            matchStatus: json.matchStatus,
+            playerTeam: json.playerTeam,
+            opponentTeam: json.opponentTeam,
+            events: newEvents,
+          });
+
+          console.log(`[${json.matchId}] events:`, nextMap.get(json.matchId)?.events);
         }
 
-        nextMap.set(json.matchId, {
-          matchId: json.matchId,
-          matchStatus: json.matchStatus,
-          playerTeam: json.playerTeam,
-          opponentTeam: json.opponentTeam,
-          events: newEvents,
-        });
-
-        const updated = nextMap.get(json.matchId);
-        console.log(`[${json.matchId}] events:`, updated?.events);
         return nextMap;
-      })
+      });
 
-      console.log(`Received update from match ${json.matchId} ${json.playerTeam} vs. ${json.opponentTeam}`);
+      console.log(`Received ${points.length} point(s) from stream`);
     };
     es.onerror = () => setError('Lost connection to match data stream');
     return () => es.close();
