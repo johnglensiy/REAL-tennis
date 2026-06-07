@@ -7,7 +7,7 @@ import pbp_tien_navone from '../data/tien-navone-pbp.json';
 import fs from 'fs';
 import path from 'path';
 
-import { matchDataClients } from '../index.ts';
+import { matchDataClients, allMatchData } from '../index.ts';
 
 const router = Router();
 
@@ -56,9 +56,11 @@ router.get('/matchdata/stream', (req, res) => {
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('Access-Control-Allow-Origin', '*');
 
-    // if (allMatchSnapshots && allMatchSnapshots.length > 0) {
-    //     res.write(`data: ${JSON.stringify(allMatchSnapshots)}\n\n`);
-    // }
+    // Send all existing events from the server mapping on connect
+    const allEvents = [...allMatchData.values()].flatMap(entry => entry.events);
+    if (allEvents.length > 0) {
+        res.write(`data: ${JSON.stringify(allEvents)}\n\n`);
+    }
 
     matchDataClients.add(res);
     req.on('close', () => matchDataClients.delete(res));

@@ -23,7 +23,7 @@ export const matchDataClients = new Set<any>();
 // launch playwright instance
 // current URL data source is ATP tour current scores home page (not all scores are from here btw)
 // eventually should be loaded on a docker instance so it's not reliant on my computer running
-browser = await chromium.launch({ channel: 'chrome', headless: true })
+browser = await chromium.launch({ channel: 'chrome', headless: false })
 context = await browser.newContext();
 page = await context.newPage();
 
@@ -39,7 +39,7 @@ page = await context.newPage();
 // }
 
 // this will eventually migrate to a DB
-const allMatchData: Map<string, MatchEntry> = new Map();
+export const allMatchData: Map<string, MatchEntry> = new Map();
 let decryptedJSON;
 let counter: number = 0;
 
