@@ -120,10 +120,21 @@ function App() {
         </p>
       </div>
 
-      <div className="flex flex-wrap gap-4">
-        {[...allMatchData.values()].map(entry => (
-          <MatchCard key={entry.matchId} entry={entry} />
-        ))}
+      {/* Live matches */}
+      <div className="mb-8">
+        <h2 className="text-sm font-semibold !text-black uppercase tracking-widest mb-3">Completed</h2>
+        <div className="flex flex-wrap gap-4">
+          {[...allMatchData.values()].map(entry => (
+            <MatchCard key={entry.matchId} entry={entry} />
+          ))}
+        </div>
+      </div>
+
+      {/* Completed matches */}
+      <div>
+        <h2 className="text-sm font-semibold !text-black uppercase tracking-widest mb-3">Live</h2>
+        <div className="flex flex-wrap gap-4">
+        </div>
       </div>
 
     </div>

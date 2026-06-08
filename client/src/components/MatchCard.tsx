@@ -35,8 +35,12 @@ export default function MatchCard({ entry }: { entry: MatchEntry }) {
         />
       </button>
 
-      {isOpen && (
-        <div style={{ display: 'flex', flexDirection: 'column-reverse', overflow: 'hidden' }}>
+      <div style={{
+        display: 'grid',
+        gridTemplateRows: isOpen ? '1fr' : '0fr',
+        transition: 'grid-template-rows 0.3s ease',
+      }}>
+        <div style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column-reverse' }}>
           {entry.events.map((e) => {
             if (e.type === 'point') return (
               <PointCard
@@ -86,7 +90,7 @@ export default function MatchCard({ entry }: { entry: MatchEntry }) {
             return <div key={e.id} style={scoreUpdateStyle}>Game, set and match {winnerTeam.lastName}</div>;
           })}
         </div>
-      )}
+      </div>
     </div>
   );
 }
