@@ -1,5 +1,5 @@
+import React, { useState } from "react";
 import type { TeamSnapshot } from "../App";
-import { useState } from "react";
 
 interface Point {
   playerGameScore: number,
@@ -26,7 +26,7 @@ const keyToPoint: Record<string, string> = {
   'DF': 'Double Fault'
 }
 
-function StatCell({ label, children }) {
+function StatCell({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div style={{
       padding: '12px 14px',
@@ -48,8 +48,10 @@ export default function PointCard({ point }: PointCardProps) {
   const winner = point.scorer == '1' ? point.team1 : point.team2;
   const loser = point.scorer == '1' ? point.team2 : point.team1;
   const [dropdownToggle, setDropdownToggle] = useState<boolean>(false);
-  const numSets = point.playerSetScores.length;
-  const numGames = point.playerSetScores[point.playerSetScores.length - 1] + point.opponentSetScores[point.opponentSetScores.length - 1] + 1;
+  const numSets = point.playerSetScores?.length ?? 0;
+  const numGames = point.playerSetScores && point.opponentSetScores
+    ? point.playerSetScores[point.playerSetScores.length - 1] + point.opponentSetScores[point.opponentSetScores.length - 1] + 1
+    : 0;
   
   return (
       <div className="animate-[slide-in_1s_ease]" style={{
