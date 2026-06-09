@@ -3,9 +3,12 @@
     "name": "Real Tennis",
     "version": "0.1.0",
     "description": "Live tennis match data",
-    "action": {
-      "default_popup": "index.html"
-    },
+    "action": {},
+    "content_scripts": [{
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }],
     "host_permissions": [
       "http://localhost:3000/*"
     ]

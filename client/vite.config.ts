@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react(), tailwindcss()],
   base: './',
   server: {
@@ -14,4 +14,11 @@ export default defineConfig({
       '/matchdata/stream': 'http://localhost:3000',
     },
   },
-})
+  build: mode === 'extension' ? {
+    rolldownOptions: {
+      input: 'src/content/main.tsx',
+      output: { entryFileNames: 'content.js' },
+      inlineDynamicImports: true,
+    }
+  } : {},
+}))
