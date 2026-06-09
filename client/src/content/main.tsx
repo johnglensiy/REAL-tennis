@@ -8,9 +8,9 @@ host.style.cssText = `
   position: fixed;
   top: 0;
   right: 0;
-  width: 320px;
   height: 100vh;
   z-index: 999999;
+  display: inline-block;
 `
 document.body.appendChild(host)
 
@@ -21,6 +21,7 @@ style.textContent = styles
 shadow.appendChild(style)
 
 const root = document.createElement('div')
+root.id = 'root'
 shadow.appendChild(root)
 
 createRoot(root).render(
