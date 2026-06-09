@@ -5,7 +5,7 @@
     "description": "Live tennis match data",
     "action": {},
     "content_scripts": [{
-      "matches": ["<all_urls>"],
+      "matches": ["https://example.com/*"],
       "js": ["content.js"],
       "run_at": "document_idle"
     }],
