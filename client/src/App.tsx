@@ -86,7 +86,7 @@ function App() {
             events: newEvents,
           });
 
-          console.log(`[${json.matchId}] events:`, nextMap.get(json.matchId)?.events);
+          // console.log(`[${json.matchId}] events:`, nextMap.get(json.matchId)?.events);
         }
 
         return nextMap;
@@ -108,7 +108,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
-      <Home />
+      <Home liveMatchData={allMatchData}/>
       {/* Title */}
       <div className="mb-7 outline">
         <h1 className="text-2xl font-bold !text-black">
