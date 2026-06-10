@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import MatchCard from './components/MatchCard';
 import type { MatchEntry } from './components/MatchCard';
+import Home from './components/Home';
 
 import './App.css';
 
@@ -106,7 +107,8 @@ function App() {
   // if (!data) return <div>Loading winners...</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 px-6 py-8 font-sans">
+    <div className="min-h-screen bg-gray-50 font-sans">
+      <Home />
       {/* Title */}
       <div className="mb-7 outline">
         <h1 className="text-2xl font-bold !text-black">

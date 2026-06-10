@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 // ─────────────────────────────────────────────────────────────
 // Types
@@ -185,7 +185,7 @@ function StatusTag({ m }: { m: Match }) {
 // Match card
 // ─────────────────────────────────────────────────────────────
 
-function PlayerLine({ p, maxSets, status }: { p: Player; maxSets?: number; status: MatchStatus }) {
+function PlayerLine({ p, status }: { p: Player; status: MatchStatus }) {
   const dim = p.winner === false || (status === 'final' && !p.winner);
   return (
     <div style={{
@@ -413,18 +413,7 @@ function Home() {
       background: 'var(--bg)',
       overflowY: 'auto', overflowX: 'hidden',
       fontFamily: 'var(--font-sans)',
-      paddingTop: 54,
     }}>
-      {/* annotation strip */}
-      <div style={{
-        padding: '6px 16px', background: 'var(--bg)',
-        borderBottom: '1px dashed var(--stroke)',
-        display: 'flex', justifyContent: 'space-between',
-      }}>
-        <span className="mono note">// home · today's matches</span>
-        <span className="mono note">v0.1 — wireframe</span>
-      </div>
-
       {/* app title row */}
       <div style={{
         padding: '14px 16px 10px', background: 'var(--paper)',
