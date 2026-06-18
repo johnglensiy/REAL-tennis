@@ -76,61 +76,80 @@ function StatusTag({ m }: { m: Match }) {
   );
 }
 
+// Score block (set columns + live pts) — shared across fit modes.
+// Renders placeholder dashes for the unplayed sets up to `bestOf`.
+function ScoreBlock({ p, status, dim, bestOf = 3, align = 'flex-end' }:
+  { p: Player; status: MatchStatus; dim: boolean; bestOf?: number; align?: string }) {
+  const played = p.sets ? p.sets.length : 0;
+  // live: dashes fill out to bestOf. upcoming: every potential set is a dash.
+  const ghost = status === 'live' ? Math.max(0, bestOf - played)
+              : status === 'upcoming' ? bestOf
+              : 0;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: align, gap: 8, minHeight: 24 }}>
+      <div style={{ display: 'flex', gap: 6 }}>
+        {Array.from({ length: ghost }).map((_, i) => (
+          <span key={'g' + i} className="mono" style={{
+            width: 12, textAlign: 'center',
+            fontSize: 15, fontWeight: 600, color: 'var(--stroke)',
+          }}>–</span>
+        ))}
+        {p.sets && p.sets.map((s, i) => {
+          const isLast = i === p.sets!.length - 1;
+          const live = status === 'live' && isLast;
+          return (
+            <span key={i} className="mono" style={{
+              width: 12, textAlign: 'center',
+              fontSize: 15, fontWeight: 600,
+              color: live ? 'var(--ink)' : (dim ? 'var(--mute)' : 'var(--ink-2)'),
+            }}>{s}</span>
+          );
+        })}
+      </div>
+      {status === 'live' && p.pts != null && (
+        <span className="mono" style={{
+          minWidth: 26, textAlign: 'center',
+          fontSize: 15, fontWeight: 700,
+          color: p.serving ? 'var(--on-accent)' : 'var(--ink)',
+          background: p.serving ? 'var(--accent)' : 'var(--bg)',
+          border: '1px solid ' + (p.serving ? 'var(--accent)' : 'var(--stroke)'),
+          borderRadius: 4, padding: '1px 4px',
+        }}>{p.pts}</span>
+      )}
+    </div>
+  );
+}
+
+function NameTag({ p, dim, clamp }: { p: Player; dim: boolean; clamp: boolean }) {
+  return (
+    <div style={{ minWidth: 0, display: 'flex', alignItems: 'baseline', gap: 5 }}>
+      <span style={{
+        fontSize: 14, fontWeight: p.winner ? 700 : 600,
+        color: dim ? 'var(--mute)' : 'var(--ink)',
+        ...(clamp
+          ? { whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }
+          : { whiteSpace: 'nowrap' }),
+      }}>{p.name}</span>
+      {p.seed && p.seed !== '—' && (
+        <span className="mono" style={{ fontSize: 10, color: 'var(--mute)', flex: '0 0 auto' }}>({p.seed})</span>
+      )}
+    </div>
+  );
+}
+
 function PlayerLine({ p, status }: { p: Player; status: MatchStatus }) {
   const dim = p.winner === false || (status === 'final' && !p.winner);
   return (
     <div style={{
       display: 'grid',
-      gridTemplateColumns: '10px 24px 1fr auto',
+      gridTemplateColumns: '24px 1fr auto',
       alignItems: 'center',
       gap: 8,
       padding: '6px 0',
     }}>
-      <span style={{ display: 'flex', justifyContent: 'center' }}>
-        {p.serving ? <BallDot /> : null}
-      </span>
-
       <FlagBox code={p.country} />
-
-      <div style={{ minWidth: 0, display: 'flex', alignItems: 'baseline', gap: 5 }}>
-        <span style={{
-          fontSize: 14, fontWeight: p.winner ? 700 : 600,
-          color: dim ? 'var(--mute)' : 'var(--ink)',
-          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-        }}>{p.name}</span>
-        {p.seed && p.seed !== '—' && (
-          <span className="mono" style={{ fontSize: 10, color: 'var(--mute)', flex: '0 0 auto' }}>({p.seed})</span>
-        )}
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 24 }}>
-        <div style={{ display: 'flex', gap: 6 }}>
-          {p.sets && p.sets.map((s, i) => {
-            const isLast = i === p.sets!.length - 1;
-            const live = status === 'live' && isLast;
-            return (
-              <span key={i} className="mono" style={{
-                width: 12, textAlign: 'center',
-                fontSize: 15, fontWeight: 600,
-                color: live ? 'var(--ink)' : (dim ? 'var(--mute)' : 'var(--ink-2)'),
-              }}>{s}</span>
-            );
-          })}
-        </div>
-        {status === 'live' && p.pts != null && (
-          <span className="mono" style={{
-            minWidth: 26, textAlign: 'center',
-            fontSize: 15, fontWeight: 700,
-            color: p.serving ? 'var(--on-accent)' : 'var(--ink)',
-            background: p.serving ? 'var(--accent)' : 'var(--bg)',
-            border: '1px solid ' + (p.serving ? 'var(--accent)' : 'var(--stroke)'),
-            borderRadius: 4, padding: '1px 4px',
-          }}>{p.pts}</span>
-        )}
-        {status === 'upcoming' && (
-          <span className="mono" style={{ minWidth: 26, textAlign: 'center', fontSize: 13, color: 'var(--stroke)' }}>–</span>
-        )}
-      </div>
+      <NameTag p={p} dim={dim} clamp={true} />
+      <ScoreBlock p={p} status={status} dim={dim} bestOf={5}/>
     </div>
   );
 }
@@ -139,7 +158,7 @@ function MatchCard({ m, livePulse }: { m: Match; livePulse?: boolean }) {
   const isLive = m.status === 'live';
   const inner = (
     <div className={isLive && livePulse ? 'live-pulse' : undefined} style={{
-      width: 252,
+      width: 344,
       scrollSnapAlign: 'start',
       background: 'var(--paper)',
       border: '1px solid ' + (isLive && livePulse ? 'var(--hot)' : 'var(--stroke)'),
@@ -149,8 +168,15 @@ function MatchCard({ m, livePulse }: { m: Match; livePulse?: boolean }) {
       cursor: m.href ? 'pointer' : 'default',
       position: 'relative',
     }}>
+      {/* card header: round + court on left and match data right */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2, minHeight: 20 }}>
-        <StatusTag m={m} />
+        <span style={{
+          display: 'inline-flex', alignItems: 'center', gap: 6, minWidth: 0,
+          fontSize: 13, whiteSpace: 'nowrap',
+        }}>
+          <span style={{ fontWeight: 600, color: 'var(--ink)' }}>Quarterfinal</span>
+          <span style={{ color: 'var(--mute)' }}>· Center Court</span>
+        </span>
         <span className="mono note">{m.meta}</span>
       </div>
 
