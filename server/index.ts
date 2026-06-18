@@ -158,7 +158,7 @@ page.on('response', async (response) => {
     }
 });
 
-await page.goto("https://www.rolandgarros.com/en-us/matches/2026/SM005");
+await page.goto("https://www.atptour.com/en/scores/stats-centre/archive/2026/500/ms028", { waitUntil: 'commit', timeout: 60000 });
 
 // populate in-memory mapping
 // on server start, we get the he-data.json of all live matches
