@@ -1,7 +1,7 @@
 export type MatchStatus = 'live' | 'final' | 'upcoming' | 'suspended' | 'cancelled';
 export type Tour = 'men' | 'women';
 
-export interface Player {
+export interface PlayerState {
   name: string;
   country: string;
   seed?: string;
@@ -11,7 +11,7 @@ export interface Player {
   winner?: boolean;
 }
 
-export interface Match {
+export interface MatchState {
   id: string;
   tournamentId: string;
   status: MatchStatus;
@@ -19,8 +19,8 @@ export interface Match {
   court: string;
   scheduledTime: string;
   startTime: number;
-  staticPlayerA: Player;
-  staticPlayerB: Player;
+  staticPlayerA: PlayerState;
+  staticPlayerB: PlayerState;
   seedA: number | 'Q' | null;
   seedB: number | 'Q' | null;
   pointIds: string[];
@@ -29,10 +29,10 @@ export interface Match {
   // has rallyData
 }
 
-export interface Tournament {
+export interface TournamentState {
     name: string;
     tour: Tour;
     detail: string;
-    matches: Match[];
+    matches: MatchState[];
 }
 
