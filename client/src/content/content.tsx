@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import MatchCard from '../components/MatchCard';
 import type { MatchEntry } from '../components/MatchCard';
 import type { MatchEvent } from '../App';
-import Home from '../components/Home';
+import Home from '../components/TournamentTracker';
 
 function App() {
   const [error, setError] = useState<string | null>(null);

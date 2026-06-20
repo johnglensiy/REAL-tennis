@@ -1,3 +1,6 @@
+import type { TournamentState } from "../../../common/types";
+import type { MatchStateOld } from "../../../common/types";
+
 export type MatchStatus = 'live' | 'final' | 'upcoming';
 export type Tour = 'men' | 'women';
 
@@ -79,7 +82,7 @@ function StatusTag({ m }: { m: Match }) {
 // Score block (set columns + live pts) — shared across fit modes.
 // Renders placeholder dashes for the unplayed sets up to `bestOf`.
 function ScoreBlock({ p, status, dim, bestOf = 3, align = 'flex-end' }:
-  { p: Player; status: MatchStatus; dim: boolean; bestOf?: number; align?: string }) {
+  { p: Player; status: string; dim: boolean; bestOf?: number; align?: string }) {
   const played = p.sets ? p.sets.length : 0;
   // live: dashes fill out to bestOf. upcoming: every potential set is a dash.
   const ghost = status === 'live' ? Math.max(0, bestOf - played)
@@ -137,7 +140,7 @@ function NameTag({ p, dim, clamp }: { p: Player; dim: boolean; clamp: boolean })
   );
 }
 
-function PlayerLine({ p, status }: { p: Player; status: MatchStatus }) {
+function PlayerLine({ p, status }: { p: Player; status: string }) {
   const dim = p.winner === false || (status === 'final' && !p.winner);
   return (
     <div style={{
@@ -154,7 +157,7 @@ function PlayerLine({ p, status }: { p: Player; status: MatchStatus }) {
   );
 }
 
-function MatchCard({ m, livePulse }: { m: Match; livePulse?: boolean }) {
+function MatchCard({ m, livePulse }: { m: MatchStateOld; livePulse?: boolean }) {
   const isLive = m.status === 'live';
   const inner = (
     <div className={isLive && livePulse ? 'live-pulse' : undefined} style={{
@@ -206,7 +209,7 @@ function MatchCard({ m, livePulse }: { m: Match; livePulse?: boolean }) {
   return inner;
 }
 
-export default function TournamentSection({ t, livePulse }: { t: Tournament; livePulse?: boolean }) {
+export default function TournamentSection({ t, livePulse }: { t: TournamentState; livePulse?: boolean }) {
   const liveCount = t.matches.filter(m => m.status === 'live').length;
   return (
     <div style={{ marginBottom: 22 }}>

@@ -3,6 +3,10 @@ import TournamentSection from './TournamentSection';
 import type { Tour, Tournament } from './TournamentSection';
 import type { MatchEntry } from './MatchCard';
 
+import type { TournamentState } from '../../../common/types';
+
+import { useAppSelector } from '../hooks';
+
 interface DateItem {
   dow: string;
   d: string;
@@ -23,9 +27,7 @@ const DATES: DateItem[] = [
   { dow: 'Sat', d: 'Jun 12' },
 ];
 
-// m: match. status 'live' | 'final' | 'upcoming'
-// players: [A, B] each { name, country, seed, sets:[..], pts, serving, winner }
-const TOURNAMENTS: Tournament[] = [
+const TOURNAMENTS: TournamentState[] = [
   {
     name: 'Wimbledon',
     tour: 'men',
@@ -174,6 +176,9 @@ function Home({ liveMatchData }: HomeProps) {
   console.log('liveMatchData size:', liveMatchData.size);
   const [tour, setTour] = useState<Tour>('men');
   const shown = TOURNAMENTS.filter(t => t.tour === tour);
+
+  // usage of redux HERE
+  const allTournaments = useAppSelector(state => state.tournaments);
 
   {/* cast liveMatchData as a tournament */}
   const liveTournament: Tournament = useMemo(() => ({
