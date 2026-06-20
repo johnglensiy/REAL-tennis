@@ -3,8 +3,6 @@ import TournamentSection from './TournamentSection';
 import type { Tour, Tournament } from './TournamentSection';
 import type { MatchEntry } from '../../../components/MatchCard';
 
-import type { TournamentState } from '../../../../../common/types';
-
 import { useAppSelector } from '../../../hooks';
 
 interface DateItem {
@@ -12,10 +10,6 @@ interface DateItem {
   d: string;
   today?: boolean;
 }
-
-// ─────────────────────────────────────────────────────────────
-// Data
-// ─────────────────────────────────────────────────────────────
 
 const DATES: DateItem[] = [
   { dow: 'Sun', d: 'Jun 6' },
@@ -26,10 +20,6 @@ const DATES: DateItem[] = [
   { dow: 'Fri', d: 'Jun 11' },
   { dow: 'Sat', d: 'Jun 12' },
 ];
-
-// ─────────────────────────────────────────────────────────────
-// Date strip
-// ─────────────────────────────────────────────────────────────
 
 function DateStrip() {
   return (
@@ -58,10 +48,6 @@ function DateStrip() {
     </div>
   );
 }
-
-// ─────────────────────────────────────────────────────────────
-// Screen
-// ─────────────────────────────────────────────────────────────
 
 function Tabs({ active, onChange }: { active: Tour; onChange: (t: Tour) => void }) {
   const items: { key: Tour; label: string }[] = [
