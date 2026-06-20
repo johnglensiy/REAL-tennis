@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
-import type { TournamentState } from '../../../../common/types';
+import type { TournamentState } from './types';
 
 // initial state contains stub data for now
 const initialState: TournamentState[] = [
