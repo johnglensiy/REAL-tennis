@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import MatchCard from './components/MatchCard';
 import type { MatchEntry } from './components/MatchCard';
-import Home from './components/TournamentTracker';
+import Home from './features/tournament-tracker/components/TournamentTracker';
 
 import './App.css';
 

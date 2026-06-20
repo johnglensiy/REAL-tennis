@@ -1,11 +1,11 @@
 import { useState, useMemo } from 'react';
 import TournamentSection from './TournamentSection';
 import type { Tour, Tournament } from './TournamentSection';
-import type { MatchEntry } from './MatchCard';
+import type { MatchEntry } from '../../../components/MatchCard';
 
-import type { TournamentState } from '../../../common/types';
+import type { TournamentState } from '../../../../../common/types';
 
-import { useAppSelector } from '../hooks';
+import { useAppSelector } from '../../../hooks';
 
 interface DateItem {
   dow: string;
@@ -178,7 +178,7 @@ function Home({ liveMatchData }: HomeProps) {
   const shown = TOURNAMENTS.filter(t => t.tour === tour);
 
   // usage of redux HERE
-  const allTournaments = useAppSelector(state => state.tournaments);
+  const allTournaments = useAppSelector(state => state.tournaments).filter(t => t.tour === tour);
 
   {/* cast liveMatchData as a tournament */}
   const liveTournament: Tournament = useMemo(() => ({
@@ -235,8 +235,6 @@ function Home({ liveMatchData }: HomeProps) {
       <div style={{ height: 18 }} />
 
       {liveMatchData.size > 0 && <TournamentSection key={liveTournament.name} t={liveTournament}/>}
-
-      {shown.map((tt, i) => <TournamentSection key={tt.name + i} t={tt} />)}
 
       {allTournaments.map((tt, i) => <TournamentSection key={tt.name + `hi` + i} t={tt}/>)}
 
