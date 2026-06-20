@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-import MatchCard from './components/MatchCard';
 import type { MatchEntry } from './components/MatchCard';
-import Home from './features/tournament-tracker/components/TournamentTracker';
+import TournamentTracker from './features/tournament-tracker/components/TournamentTracker';
 
 import './App.css';
 
@@ -108,36 +107,27 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
-      <Home liveMatchData={allMatchData}/>
+      <TournamentTracker liveMatchData={allMatchData}/>
+
+      {/* Old code */}
       {/* Title */}
-      <div className="mb-7 outline">
+      {/* <div className="mb-7 outline">
         <h1 className="text-2xl font-bold !text-black">
           Roland Garros
-          {/* {data.opponentSeed && (
-            <span className="text-sm font-medium text-gray-400 ml-2">#{data.opponentSeed}</span>
-          )} */}
         </h1>
         <p className="mt-1 text-sm text-gray-400">
-          {/* {data.matchType} · {data.winners.length} winners */}
         </p>
-      </div>
+      </div> */}
 
       {/* Live matches */}
-      <div className="mb-8">
+      {/* <div className="mb-8">
         <h2 className="text-sm font-semibold !text-black uppercase tracking-widest mb-3">Completed</h2>
         <div className="flex flex-wrap gap-4">
           {[...allMatchData.values()].map(entry => (
             <MatchCard key={entry.matchId} entry={entry} />
           ))}
         </div>
-      </div>
-
-      {/* Completed matches */}
-      <div>
-        <h2 className="text-sm font-semibold !text-black uppercase tracking-widest mb-3">Live</h2>
-        <div className="flex flex-wrap gap-4">
-        </div>
-      </div>
+      </div> */}
 
     </div>
   );

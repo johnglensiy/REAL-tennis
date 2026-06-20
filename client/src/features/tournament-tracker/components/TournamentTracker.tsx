@@ -1,6 +1,9 @@
 import { useState, useMemo } from 'react';
+
 import TournamentSection from './TournamentSection';
-import type { Tour, Tournament } from './TournamentSection';
+import type { Tour, Tournament } from '../types';
+
+// to be replaced with TournamentsSlice
 import type { MatchEntry } from '../../../components/MatchCard';
 
 import { useAppSelector } from '../../../hooks';
