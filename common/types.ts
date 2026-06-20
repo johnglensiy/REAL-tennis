@@ -17,6 +17,7 @@ export interface MatchState {
   status: MatchStatus;
   round: string;
   court: string;
+  meta: string;
   scheduledTime: string;
   startTime: number;
   staticPlayerA: PlayerState;
@@ -29,10 +30,30 @@ export interface MatchState {
   // has rallyData
 }
 
+export interface MatchStateOld {
+  id: string;
+  status: string;
+  meta: string;
+  live?: string;
+  href?: string;
+  a: PlayerStateOld;
+  b: PlayerStateOld;
+}
+
+export interface PlayerStateOld {
+  name: string;
+  country: string;
+  seed?: string;
+  sets?: number[];
+  pts?: string;
+  serving?: boolean;
+  winner?: boolean;
+}
+
 export interface TournamentState {
     name: string;
     tour: Tour;
     detail: string;
-    matches: MatchState[];
+    matches: MatchStateOld[];
 }
 
