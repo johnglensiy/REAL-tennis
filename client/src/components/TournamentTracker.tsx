@@ -238,6 +238,8 @@ function Home({ liveMatchData }: HomeProps) {
 
       {shown.map((tt, i) => <TournamentSection key={tt.name + i} t={tt} />)}
 
+      {allTournaments.map((tt, i) => <TournamentSection key={tt.name + `hi` + i} t={tt}/>)}
+
       {/* footer */}
       <div style={{ padding: '4px 16px 20px', display: 'flex', alignItems: 'center', gap: 6 }}>
         <span style={{
