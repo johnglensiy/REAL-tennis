@@ -1,5 +1,5 @@
-import { createSlice } from '@reduxjs/toolkit'
-import type { TournamentState } from './types';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
+import type { TournamentState, MatchStateOld } from './types';
 
 // initial state contains stub data for now
 const initialState: TournamentState[] = [
@@ -80,7 +80,15 @@ const initialState: TournamentState[] = [
 const tournamentsSlice = createSlice({
     name: 'tournaments',
     initialState,
-    reducers: {}
+    reducers: {
+      liveMatchAdded(state, action: PayloadAction<MatchStateOld>) {
+        // Push the match to the correct tournament
+        // PLACEHOLDER
+        const tournament = state.find(t => t.name === 'Wimbledon' && t.tour === 'men');
+        tournament?.matches.push(action.payload);
+      }
+    }
 });
 
+export const { liveMatchAdded } = tournamentsSlice.actions;
 export default tournamentsSlice.reducer;

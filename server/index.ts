@@ -47,6 +47,8 @@ page.on('response', async (response) => {
     const url = response.url();
     
     // TODO: add heartbeat monitoring if certain responses are not coming in
+    // TODO: currently this is for ONE MATCH only
+    // multiple page instances need to be created running this handler
     if (url.includes('match-beats/data')) {
         console.log(allMatchData);
         try {

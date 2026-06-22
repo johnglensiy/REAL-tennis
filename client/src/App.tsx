@@ -1,6 +1,9 @@
-import { useEffect, useState } from 'react';
-import type { MatchEntry } from './components/MatchCard';
-import TournamentTracker from './features/tournament-tracker/components/TournamentTracker';
+import { useEffect, useState } from 'react'
+import type { MatchEntry } from './components/MatchCard'
+import TournamentTracker, { type MatchStateOld } from './features/tournament-tracker/index'
+
+import { liveMatchAdded } from './features/tournament-tracker/tournamentsSlice' 
+import { useAppDispatch } from './hooks'
 
 import './App.css';
 
@@ -39,16 +42,52 @@ export interface ScoreUpdate {
 
 export type MatchEvent = Point | ScoreUpdate;
 
-
 function App() {
   const [error, setError] = useState<string | null>(null);
   const [allMatchData, setAllMatchData] = useState<Map<string, MatchEntry>>(new Map());
 
+  const dispatch = useAppDispatch();
+
   useEffect(() => {
     const es = new EventSource('matchdata/stream');
     es.onmessage = (e: MessageEvent) => {
+      console.log('[SSE] event received', e.data);
       const points: any[] = JSON.parse(e.data);
+      const newestPoint = points[points.length - 1];
+ 
+      // new tournamentsSlice state
+      // Prepare the action tournaments/liveMatchUpdated for dispatch
+      // TODO: this is wrong because match entities should not update tournaments
+      // Eventually matches will have their own redux slice
+      // Should not include any logic for updating state
+      const updatedMatchState: MatchStateOld = {
+        id: 'something',
+        status: 'live',
+        meta: 'Set 4 · 2:14',
+        live: 'LIVE',
+        a: {
+          name: `${newestPoint.playerTeam.firstName} ${newestPoint.playerTeam.lastName}`,
+          country: newestPoint.playerTeam.country,
+          seed: newestPoint.playerTeam.seed,
+          sets: newestPoint.playerTeam.setScores,
+          pts: newestPoint.playerTeam.gameScore,
+          serving: newestPoint.playerTeam.isServer,
+        },
+        b: {
+          name: `${newestPoint.opponentTeam.firstName} ${newestPoint.opponentTeam.lastName}`,
+          country: newestPoint.opponentTeam.country,
+          seed: newestPoint.opponentTeam.seed,
+          sets: newestPoint.opponentTeam.setScores,
+          pts: newestPoint.opponentTeam.gameScore,
+          serving: newestPoint.opponentTeam.isServer,
+        }
+      } 
 
+      dispatch(liveMatchAdded(updatedMatchState));
+
+      // old allMatchData mapping state
+      // technically this could be simplified by getting the last point
+      // but we would lose all points in the middle
       setAllMatchData(prev => {
         const nextMap = new Map(prev);
 
@@ -91,7 +130,7 @@ function App() {
         return nextMap;
       });
 
-      console.log(`Received ${points.length} point(s) from stream`);
+      console.log(`Received ${points.length} new point(s) from stream`);
     };
     es.onerror = () => setError('Lost connection to match data stream');
     return () => es.close();

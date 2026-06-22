@@ -1,36 +1,6 @@
 import type { TournamentState } from "../../../../../common/types";
 import MatchCard from "./MatchCard";
 
-export type MatchStatus = 'live' | 'final' | 'upcoming';
-export type Tour = 'men' | 'women';
-
-export interface Player {
-  name: string;
-  country: string;
-  seed?: string;
-  sets?: number[];
-  pts?: string;
-  serving?: boolean;
-  winner?: boolean;
-}
-
-export interface Match {
-  id: string;
-  status: MatchStatus;
-  meta: string;
-  live?: string;
-  href?: string;
-  a: Player;
-  b: Player;
-}
-
-export interface Tournament {
-  name: string;
-  tour: Tour;
-  detail: string;
-  matches: Match[];
-}
-
 export default function TournamentSection({ t, livePulse }: { t: TournamentState; livePulse?: boolean }) {
   const liveCount = t.matches.filter(m => m.status === 'live').length;
   return (
