@@ -1,5 +1,7 @@
 import express from 'express';
-import { chromium, Browser, BrowserContext, Page } from 'playwright';
+import { Browser, BrowserContext, Page } from 'playwright';
+import { chromium } from 'playwright-extra';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import eventsRoutes from './routes/events.routes.ts';
 
 import fs from 'fs';
@@ -8,6 +10,7 @@ import extractSnapshotFromMatchData from './utils/extractSnapshotFromMatchData.t
 import { buildPointForMockStream } from './utils/buildPointForMockStream.ts';
 import { MatchEntry } from './types.ts';
 import { decryptResponse, decryptResponseRG } from './scripts/rolandgarros.ts';
+import { getUpcomingMatches } from './utils/getUpcomingMatches.ts';
 
 const app = express();
 const PORT = 3000;
@@ -23,6 +26,8 @@ export const matchDataClients = new Set<any>();
 // launch playwright instance
 // current URL data source is ATP tour current scores home page (not all scores are from here btw)
 // eventually should be loaded on a docker instance so it's not reliant on my computer running
+chromium.use(StealthPlugin())
+
 browser = await chromium.launch({ channel: 'chrome', headless: false })
 context = await browser.newContext();
 page = await context.newPage();
@@ -168,6 +173,13 @@ await page.goto("https://www.atptour.com/en/scores/stats-centre/archive/2026/500
 // if exists then diff with 
 
 // get upcoming matches and store them in memory
+const upcomingMatches = await getUpcomingMatches(
+    context,
+    "https://www.atptour.com/en/scores/current/eastbourne/741/daily-schedule"
+);
+console.log('[Schedule] Upcoming matches:');
+console.dir(upcomingMatches, { depth: null, colors: true });
+
 
 // app configs
 app.use('/', eventsRoutes);

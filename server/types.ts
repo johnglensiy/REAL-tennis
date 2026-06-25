@@ -35,6 +35,21 @@ export interface ScoreUpdate {
     timeElapsed: number,
   }
 
+export interface UpcomingMatch {
+    court: string;
+    time: string;
+    round: string;
+    player1: { name: string; seed: string | null; entry: string | null };
+    player2: { name: string; seed: string | null; entry: string | null };
+    matchUrl: string | null;
+}
+
+export interface MatchDay {
+    label: string;
+    value: string;
+    matches: UpcomingMatch[];
+}
+
 export interface MatchEntry {
     matchId: string;
     matchStatus: string;
