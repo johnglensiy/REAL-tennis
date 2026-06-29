@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import type { MatchEntry } from './components/MatchCard'
 import TournamentTracker, { type MatchStateOld } from './features/tournament-tracker/index'
 
-import { liveMatchAdded } from './features/tournament-tracker/tournamentsSlice' 
+import { liveMatchAdded, matchScheduled } from './features/tournament-tracker/tournamentsSlice'
 import { useAppDispatch } from './hooks'
 
 import './App.css';
@@ -52,14 +52,23 @@ function App() {
     const es = new EventSource('matchdata/stream');
     es.onmessage = (e: MessageEvent) => {
       console.log('[SSE] event received', e.data);
-      const points: any[] = JSON.parse(e.data);
+      const data = JSON.parse(e.data);
+
+      // scheduled (upcoming) matches arrive as a single MatchScheduled object;
+      // live point snapshots arrive as an array
+      switch (data.type) {
+        case 'scheduled': {
+          dispatch(matchScheduled(data));
+          return;
+        }
+      }
+
+      // in-progress (live) match: a batch of point snapshots
+      const points: any[] = Array.isArray(data) ? data : [data];
       const newestPoint = points[points.length - 1];
- 
-      // new tournamentsSlice state
-      // Prepare the action tournaments/liveMatchUpdated for dispatch
+
       // TODO: this is wrong because match entities should not update tournaments
       // Eventually matches will have their own redux slice
-      // Should not include any logic for updating state
       const updatedMatchState: MatchStateOld = {
         id: 'something',
         status: 'live',
@@ -81,7 +90,7 @@ function App() {
           pts: newestPoint.opponentTeam.gameScore,
           serving: newestPoint.opponentTeam.isServer,
         }
-      } 
+      }
 
       dispatch(liveMatchAdded(updatedMatchState));
 
