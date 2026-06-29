@@ -8,7 +8,8 @@ import fs from 'fs';
 
 import extractSnapshotFromMatchData from './utils/extractSnapshotFromMatchData.ts';
 import { buildPointForMockStream } from './utils/buildPointForMockStream.ts';
-import { MatchEntry } from './types.ts';
+import { MatchEntry, UpcomingMatch } from './types.ts';
+import { MatchScheduled, PlayerStateOld, Tour } from '../common/types.ts';
 import { decryptResponse, decryptResponseRG } from './scripts/rolandgarros.ts';
 import { getUpcomingMatches } from './utils/getUpcomingMatches.ts';
 
@@ -180,6 +181,31 @@ const upcomingMatches = await getUpcomingMatches(
 console.log('[Schedule] Upcoming matches:');
 console.dir(upcomingMatches, { depth: null, colors: true });
 
+// map scraped schedule -> MatchScheduled wire events
+// tour/tournament aren't in the scrape; they come from the source URL
+const SCHEDULE_TOUR: Tour = 'men';
+const SCHEDULE_TOURNAMENT = 'Eastbourne';
+
+const toPlayerState = (p: UpcomingMatch['player1']): PlayerStateOld => ({
+    name: p.name,
+    country: '',                 // not in schedule data
+    seed: p.seed ?? undefined,
+});
+
+// stored so the SSE route can send them to each client on connect
+export const scheduledMatches: MatchScheduled[] = upcomingMatches.flatMap(day =>
+    day.matches.map((m): MatchScheduled => ({
+        type: 'scheduled',
+        matchId: m.matchUrl ?? `${m.player1.name} vs ${m.player2.name}`,
+        tour: SCHEDULE_TOUR,
+        tournament: SCHEDULE_TOURNAMENT,
+        court: m.court,
+        scheduledTime: `${day.label} ${m.time}`.trim(),
+        round: m.round,
+        playerA: toPlayerState(m.player1),
+        playerB: toPlayerState(m.player2),
+    }))
+);
 
 // app configs
 app.use('/', eventsRoutes);

@@ -7,7 +7,7 @@ import pbp_tien_navone from '../data/tien-navone-pbp.json';
 import fs from 'fs';
 import path from 'path';
 
-import { matchDataClients, allMatchData } from '../index.ts';
+import { matchDataClients, allMatchData, scheduledMatches } from '../index.ts';
 
 const router = Router();
 
@@ -60,6 +60,11 @@ router.get('/matchdata/stream', (req, res) => {
     const allEvents = [...allMatchData.values()].flatMap(entry => entry.events);
     if (allEvents.length > 0) {
         res.write(`data: ${JSON.stringify(allEvents)}\n\n`);
+    }
+
+    // Send scheduled (upcoming) matches on connect, one event per message
+    for (const match of scheduledMatches) {
+        res.write(`data: ${JSON.stringify(match)}\n\n`);
     }
 
     matchDataClients.add(res);
