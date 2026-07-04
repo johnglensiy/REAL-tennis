@@ -47,6 +47,7 @@ export interface UpcomingMatch {
 export interface MatchDay {
     label: string;
     value: string;
+    date: string;   // exact calendar date, e.g. "Tue, 30 June, 2026"
     matches: UpcomingMatch[];
 }
 

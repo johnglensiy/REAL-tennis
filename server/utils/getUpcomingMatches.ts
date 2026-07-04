@@ -30,6 +30,15 @@ export const getUpcomingMatches = async (
             }, day.value);
             await page.waitForTimeout(800 + Math.random() * 400);
 
+            // exact date from the day header, e.g. "Tue, 30 June, 2026"
+            // (h4.day holds the date as a text node, with "(Day N)" in a child span)
+            const dateText = await page.evaluate(() => {
+                const header = document.querySelector('.tournament-day h4.day');
+                if (!header) return '';
+                const spanText = header.querySelector('span')?.textContent ?? '';
+                return (header.textContent ?? '').replace(spanText, '').replace(/\s+/g, ' ').trim();
+            });
+
             const rawMatches = await page.evaluate(() => {
                 return Array.from(document.querySelectorAll('.schedule')).map(el => {
                     const locationText = el.querySelector('.schedule-location-timestamp')?.textContent ?? '';
@@ -81,8 +90,8 @@ export const getUpcomingMatches = async (
                 });
             }
 
-            console.log(`[Schedule] Day: ${day.label} — ${dayResult.length} matches`);
-            matchDays.push({ label: day.label, value: day.value, matches: dayResult });
+            console.log(`[Schedule] Day: ${day.label} (${dateText}) — ${dayResult.length} matches`);
+            matchDays.push({ label: day.label, value: day.value, date: dateText, matches: dayResult });
         }
 
         return matchDays;

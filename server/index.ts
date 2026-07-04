@@ -176,7 +176,7 @@ await page.goto("https://www.atptour.com/en/scores/stats-centre/archive/2026/500
 // get upcoming matches and store them in memory
 const upcomingMatches = await getUpcomingMatches(
     context,
-    "https://www.atptour.com/en/scores/current/eastbourne/741/daily-schedule"
+    "https://www.atptour.com/en/scores/current/wimbledon/540/daily-schedule"
 );
 console.log('[Schedule] Upcoming matches:');
 console.dir(upcomingMatches, { depth: null, colors: true });
