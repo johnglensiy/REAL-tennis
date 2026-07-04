@@ -8,46 +8,69 @@ import type { MatchEntry } from '../../../components/MatchCard';
 
 import { useAppSelector } from '../../../hooks';
 
-interface DateItem {
+interface DateStripItem {
   dow: string;
   d: string;
-  today?: boolean;
+  iso: string;
+  today: boolean;
 }
 
-const DATES: DateItem[] = [
-  { dow: 'Sun', d: 'Jun 6' },
-  { dow: 'Mon', d: 'Jun 7' },
-  { dow: 'Tue', d: 'Jun 8', today: true },
-  { dow: 'Wed', d: 'Jun 9' },
-  { dow: 'Thu', d: 'Jun 10' },
-  { dow: 'Fri', d: 'Jun 11' },
-  { dow: 'Sat', d: 'Jun 12' },
-];
+// local YYYY-MM-DD (avoids toISOString's UTC shift)
+const toLocalISO = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
-function DateStrip() {
+function calcNearestDates(range=7): DateStripItem[] {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayISO = toLocalISO(today);
+
+  const items: DateStripItem[] = [];
+  for (let offset = -range; offset <= range; offset++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + offset);
+    items.push({
+      dow: d.toLocaleDateString('en-US', { weekday: 'short' }),
+      d: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric'}),
+      iso: toLocalISO(d),
+      today: toLocalISO(d) === todayISO,
+    });
+  }
+  return items;
+}
+
+// pass in date state and handler
+function DateStrip({ sel, onSel }: { sel: number; onSel: (i: number) => void }) {
+  const dates = useMemo(() => calcNearestDates(), []);
   return (
     <div className="hscroll" style={{
-      display: 'flex', gap: 4, padding: '4px 12px 12px',
+      display: 'flex', gap: 4, padding: '4px 12px 10px',
       borderBottom: '1px solid var(--stroke)', background: 'var(--paper)',
     }}>
-      {DATES.map((dt, i) => (
-        <div key={i} style={{
-          flex: '0 0 auto', minWidth: 56,
-          display: 'flex', flexDirection: 'column', alignItems: 'center',
-          padding: '8px 10px', borderRadius: 8,
-          background: dt.today ? 'var(--sel)' : 'transparent',
-        }}>
-          <span className="mono" style={{
-            fontSize: 10, letterSpacing: '0.04em',
-            color: dt.today ? 'var(--sel-ink)' : 'var(--mute)',
-            opacity: dt.today ? 0.7 : 1,
-          }}>{dt.d}</span>
-          <span style={{
-            fontSize: 16, fontWeight: 700, marginTop: 2,
-            color: dt.today ? 'var(--sel-ink)' : 'var(--ink-2)',
-          }}>{dt.dow}</span>
-        </div>
-      ))}
+      {dates.map((dt, i) => {
+        const on = i === sel;
+        return (
+          <div key={i} onClick={() => onSel(i)} style={{
+            flex: '0 0 auto', minWidth: 52,
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+            padding: '7px 10px 5px', borderRadius: 8, cursor: 'pointer',
+            background: on ? 'var(--sel)' : 'transparent',
+          }}>
+            <span className="mono" style={{
+              fontSize: 9, letterSpacing: '0.08em', textTransform: 'uppercase',
+              color: on ? 'var(--sel-ink)' : 'var(--mute)',
+              opacity: on ? 0.75 : 1,
+            }}>{dt.dow}</span>
+            <span className="mono" style={{
+              fontSize: 17, fontWeight: 700, marginTop: 1,
+              color: on ? 'var(--sel-ink)' : 'var(--ink-2)',
+            }}>{dt.d.split(' ')[1]}</span>
+            <span style={{
+              width: 4, height: 4, borderRadius: '50%', marginTop: 3,
+              background: dt.today ? (on ? 'var(--sel-ink)' : 'var(--accent-ink)') : 'transparent',
+            }}></span>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -91,6 +114,7 @@ interface TournamentTrackerProps {
 function TournamentTracker({ liveMatchData }: TournamentTrackerProps) {
   console.log('liveMatchData size:', liveMatchData.size);
   const [tour, setTour] = useState<Tour>('men');
+  const [dateSel, setDateSel] = useState(() => calcNearestDates().findIndex(d => d.today));
 
   const allTournaments = useAppSelector(state => state.tournaments).filter(t => t.tour === tour);
 
@@ -142,7 +166,7 @@ function TournamentTracker({ liveMatchData }: TournamentTrackerProps) {
         </span>
       </div>
 
-      <DateStrip />
+      <DateStrip sel={dateSel} onSel={setDateSel} />
 
       <Tabs active={tour} onChange={setTour} />
 
