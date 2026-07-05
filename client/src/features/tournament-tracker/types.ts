@@ -4,6 +4,7 @@ export type Tour = 'men' | 'women';
 export interface MatchStateOld {
   id: string;
   status: string;
+  scheduledDate: string;
   meta: string;
   live?: string;
   href?: string;

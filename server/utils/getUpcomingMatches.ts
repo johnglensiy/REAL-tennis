@@ -12,9 +12,29 @@ export interface UpcomingMatch {
 export interface DaySchedule {
     label: string;
     value: string;
-    date: string;   // exact calendar date, e.g. "Tue, 30 June, 2026"
+    date: string;   // ISO calendar date, e.g. "2026-06-30"
     matches: UpcomingMatch[];
 }
+
+const MONTHS = [
+    'january', 'february', 'march', 'april', 'may', 'june',
+    'july', 'august', 'september', 'october', 'november', 'december',
+];
+
+/**
+ * Converts a scraped header date like "Tue, 30 June, 2026" to an ISO
+ * calendar date "2026-06-30". Built from string parts (no `new Date`),
+ * so it's timezone-independent. Returns '' if the input can't be parsed.
+ */
+const toISODate = (raw: string): string => {
+    const m = raw.match(/(\d{1,2})\s+([A-Za-z]+),?\s+(\d{4})/);
+    if (!m) return '';
+    const monthIdx = MONTHS.indexOf(m[2].toLowerCase());
+    if (monthIdx === -1) return '';
+    const day = m[1].padStart(2, '0');
+    const month = String(monthIdx + 1).padStart(2, '0');
+    return `${m[3]}-${month}-${day}`;
+};
 
 /**
  * Scrapes the ATP daily-schedule page for upcoming singles matches, grouped by day.
@@ -69,6 +89,9 @@ export const getUpcomingMatches = async (
                 return (header.textContent ?? '').replace(spanText, '').replace(/\s+/g, ' ').trim();
             });
 
+            // send ISO over the wire; the client formats it for display
+            const isoDate = toISODate(dateText);
+
             const dayRawMatches = await page.evaluate(() => {
                 return Array.from(document.querySelectorAll('.schedule')).map(el => {
                     const locationText = el.querySelector('.schedule-location-timestamp')?.textContent ?? '';
@@ -121,8 +144,8 @@ export const getUpcomingMatches = async (
                 });
             }
 
-            console.log(`[Schedule] Day: ${day.label} (${dateText}) — ${dayUpcomingMatches.length} matches`);
-            rawTournSchedule.push({ label: day.label, value: day.value, date: dateText, matches: dayUpcomingMatches });
+            console.log(`[Schedule] Day: ${day.label} (${dateText} -> ${isoDate}) — ${dayUpcomingMatches.length} matches`);
+            rawTournSchedule.push({ label: day.label, value: day.value, date: isoDate, matches: dayUpcomingMatches });
         }
 
         return rawTournSchedule;

@@ -114,9 +114,16 @@ interface TournamentTrackerProps {
 function TournamentTracker({ liveMatchData }: TournamentTrackerProps) {
   console.log('liveMatchData size:', liveMatchData.size);
   const [tour, setTour] = useState<Tour>('men');
-  const [dateSel, setDateSel] = useState(() => calcNearestDates().findIndex(d => d.today));
+  const dates = useMemo(() => calcNearestDates(), []);
+  const [dateSel, setDateSel] = useState(() => dates.findIndex(d => d.today));
+  const selectedDate = dates[dateSel];
 
   const allTournaments = useAppSelector(state => state.tournaments).filter(t => t.tour === tour);
+
+  // show only matches scheduled on the selected date; drop tournaments left empty
+  const visibleTournaments = allTournaments
+    .map(t => ({ ...t, matches: t.matches.filter(m => m.scheduledDate === selectedDate?.iso) }))
+    .filter(t => t.matches.length > 0);
 
   {/* cast liveMatchData as a tournament */}
   const liveTournament: Tournament = useMemo(() => ({
@@ -172,9 +179,9 @@ function TournamentTracker({ liveMatchData }: TournamentTrackerProps) {
 
       <div style={{ height: 18 }} />
 
-      {liveMatchData.size > 0 && <TournamentSection key={liveTournament.name} t={liveTournament}/>}
+      {selectedDate?.today && liveMatchData.size > 0 && <TournamentSection key={liveTournament.name} t={liveTournament}/>}
 
-      {allTournaments.map((tt, i) => <TournamentSection key={tt.name + `hi` + i} t={tt}/>)}
+      {visibleTournaments.map((tt, i) => <TournamentSection key={tt.name + `hi` + i} t={tt}/>)}
 
       {/* footer */}
       <div style={{ padding: '4px 16px 20px', display: 'flex', alignItems: 'center', gap: 6 }}>
