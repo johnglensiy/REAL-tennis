@@ -35,22 +35,6 @@ export interface ScoreUpdate {
     timeElapsed: number,
   }
 
-export interface UpcomingMatch {
-    court: string;
-    time: string;
-    round: string;
-    player1: { name: string; seed: string | null; entry: string | null };
-    player2: { name: string; seed: string | null; entry: string | null };
-    matchUrl: string | null;
-}
-
-export interface MatchDay {
-    label: string;
-    value: string;
-    date: string;   // exact calendar date, e.g. "Tue, 30 June, 2026"
-    matches: UpcomingMatch[];
-}
-
 export interface MatchEntry {
     matchId: string;
     matchStatus: string;

@@ -1,10 +1,40 @@
 import { BrowserContext } from 'playwright';
-import { MatchDay, UpcomingMatch } from '../types.ts';
 
+export interface UpcomingMatch {
+    court: string;
+    time: string;
+    round: string;
+    player1: { name: string; seed: string | null; entry: string | null };
+    player2: { name: string; seed: string | null; entry: string | null };
+    matchUrl: string | null;
+}
+
+export interface DaySchedule {
+    label: string;
+    value: string;
+    date: string;   // exact calendar date, e.g. "Tue, 30 June, 2026"
+    matches: UpcomingMatch[];
+}
+
+/**
+ * Scrapes the ATP daily-schedule page for upcoming singles matches, grouped by day.
+ * May migrate away from this due to inconsistent time displays
+ *
+ * Opens the schedule URL, reads the day options from the `#matchDate-filter`
+ * dropdown, then for each day: programmatically selects it (dispatching a
+ * `change` event so the page re-renders), reads that day's exact date from the
+ * `h4.day` header, and scrapes every `.schedule` row. Player strings are parsed
+ * into name/seed/entry, and WTA matches and doubles are filtered out.
+ *
+ * @param context - A Playwright browser context; a fresh page is opened and closed internally.
+ * @param scheduleUrl - The ATP daily-schedule URL to scrape (e.g. a tournament's `daily-schedule` page).
+ * @returns A `DaySchedule[]`, one entry per day, each with its label/value/date and the day's `UpcomingMatch[]`.
+ *          Resolves to `[]` if scraping fails (errors are caught and logged, not thrown).
+ */
 export const getUpcomingMatches = async (
     context: BrowserContext,
     scheduleUrl: string
-): Promise<MatchDay[]> => {
+): Promise<DaySchedule[]> => {
     const page = await context.newPage();
 
     try {
@@ -20,7 +50,7 @@ export const getUpcomingMatches = async (
 
         console.log('[Schedule] Days:', days);
 
-        const matchDays: MatchDay[] = [];
+        const rawTournSchedule: DaySchedule[] = [];
 
         for (const day of days) {
             await page.evaluate((value) => {
@@ -39,7 +69,7 @@ export const getUpcomingMatches = async (
                 return (header.textContent ?? '').replace(spanText, '').replace(/\s+/g, ' ').trim();
             });
 
-            const rawMatches = await page.evaluate(() => {
+            const dayRawMatches = await page.evaluate(() => {
                 return Array.from(document.querySelectorAll('.schedule')).map(el => {
                     const locationText = el.querySelector('.schedule-location-timestamp')?.textContent ?? '';
                     const timeText = el.querySelector('.matchtime')?.textContent?.trim() ?? '';
@@ -62,14 +92,15 @@ export const getUpcomingMatches = async (
             };
 
             let currentCourt = '';
-            const dayResult: UpcomingMatch[] = [];
+            const dayUpcomingMatches: UpcomingMatch[] = [];
 
-            for (const raw of rawMatches) {
+            for (const raw of dayRawMatches) {
                 const locationLines = raw.locationText.split('\n').map(l => l.trim()).filter(Boolean);
                 if (locationLines.length > 0 && !locationLines[0].match(/^(Starts At|Followed By|Not Before)/i)) {
                     currentCourt = locationLines[0];
                 }
 
+                // skip WTA matches for now
                 if (raw.matchType === 'WTA') continue;
 
                 const p1 = parsePlayer(raw.player1Raw);
@@ -80,7 +111,7 @@ export const getUpcomingMatches = async (
                 const isDoubles = /\w+\.\s+\w+\s+\w+\.\s+\w+/.test(p1.name);
                 if (isDoubles) continue;
 
-                dayResult.push({
+                dayUpcomingMatches.push({
                     court: currentCourt,
                     time: raw.timeText,
                     round: raw.roundText,
@@ -90,11 +121,11 @@ export const getUpcomingMatches = async (
                 });
             }
 
-            console.log(`[Schedule] Day: ${day.label} (${dateText}) — ${dayResult.length} matches`);
-            matchDays.push({ label: day.label, value: day.value, date: dateText, matches: dayResult });
+            console.log(`[Schedule] Day: ${day.label} (${dateText}) — ${dayUpcomingMatches.length} matches`);
+            rawTournSchedule.push({ label: day.label, value: day.value, date: dateText, matches: dayUpcomingMatches });
         }
 
-        return matchDays;
+        return rawTournSchedule;
     } catch (e) {
         console.log('[Schedule] Error:', e);
         return [];

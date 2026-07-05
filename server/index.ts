@@ -8,7 +8,8 @@ import fs from 'fs';
 
 import extractSnapshotFromMatchData from './utils/extractSnapshotFromMatchData.ts';
 import { buildPointForMockStream } from './utils/buildPointForMockStream.ts';
-import { MatchEntry, UpcomingMatch } from './types.ts';
+import { MatchEntry } from './types.ts';
+import { UpcomingMatch } from './utils/getUpcomingMatches.ts'
 import { MatchScheduled, PlayerStateOld, Tour } from '../common/types.ts';
 import { decryptResponse, decryptResponseRG } from './scripts/rolandgarros.ts';
 import { getUpcomingMatches } from './utils/getUpcomingMatches.ts';
@@ -200,6 +201,7 @@ export const scheduledMatches: MatchScheduled[] = upcomingMatches.flatMap(day =>
         tour: SCHEDULE_TOUR,
         tournament: SCHEDULE_TOURNAMENT,
         court: m.court,
+        scheduledDate: day.date,
         scheduledTime: `${day.label} ${m.time}`.trim(),
         round: m.round,
         playerA: toPlayerState(m.player1),
