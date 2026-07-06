@@ -1,18 +1,18 @@
-import express from 'express';
-import { Browser, BrowserContext, Page } from 'playwright';
-import { chromium } from 'playwright-extra';
-import StealthPlugin from 'puppeteer-extra-plugin-stealth';
-import eventsRoutes from './routes/events.routes.ts';
+import express from "express";
+import { Browser, BrowserContext, Page } from "playwright";
+import { chromium } from "playwright-extra";
+import StealthPlugin from "puppeteer-extra-plugin-stealth";
+import eventsRoutes from "./routes/events.routes.ts";
 
-import fs from 'fs';
+import fs from "fs";
 
-import extractSnapshotFromMatchData from './utils/extractSnapshotFromMatchData.ts';
-import { buildPointForMockStream } from './utils/buildPointForMockStream.ts';
-import { MatchEntry } from './types.ts';
-import { UpcomingMatch } from './utils/getUpcomingMatches.ts'
-import { MatchScheduled, PlayerStateOld, Tour } from '../common/types.ts';
-import { decryptResponse, decryptResponseRG } from './scripts/rolandgarros.ts';
-import { getUpcomingMatches } from './utils/getUpcomingMatches.ts';
+import extractSnapshotFromMatchData from "./utils/extractSnapshotFromMatchData.ts";
+import { buildPointForMockStream } from "./utils/buildPointForMockStream.ts";
+import { MatchEntry } from "./types.ts";
+import { UpcomingMatch } from "./utils/getUpcomingMatches.ts";
+import { MatchScheduled, PlayerStateOld, Tour } from "../common/types.ts";
+import { decryptResponse, decryptResponseRG } from "./scripts/rolandgarros.ts";
+import { getUpcomingMatches } from "./utils/getUpcomingMatches.ts";
 
 const app = express();
 const PORT = 3000;
@@ -28,9 +28,9 @@ export const matchDataClients = new Set<any>();
 // launch playwright instance
 // current URL data source is ATP tour current scores home page (not all scores are from here btw)
 // eventually should be loaded on a docker instance so it's not reliant on my computer running
-chromium.use(StealthPlugin())
+chromium.use(StealthPlugin());
 
-browser = await chromium.launch({ channel: 'chrome', headless: false })
+browser = await chromium.launch({ channel: "chrome", headless: false });
 context = await browser.newContext();
 page = await context.newPage();
 
@@ -50,169 +50,188 @@ export const allMatchData: Map<string, MatchEntry> = new Map();
 let decryptedJSON;
 let counter: number = 0;
 
-page.on('response', async (response) => {
-    const url = response.url();
-    
-    // TODO: add heartbeat monitoring if certain responses are not coming in
-    // TODO: currently this is for ONE MATCH only
-    // multiple page instances need to be created running this handler
-    if (url.includes('match-beats/data')) {
-        console.log(allMatchData);
-        try {
-            const json = await response.json();
-            decryptedJSON = decryptResponse(json);
-            fs.writeFileSync(`match-beats-${counter}.json`, JSON.stringify(decryptedJSON, null, 2));
-            console.log('match-beats written');
-            counter += 1;
+page.on("response", async (response) => {
+  const url = response.url();
 
-            // cast to point type
+  // TODO: add heartbeat monitoring if certain responses are not coming in
+  // TODO: currently this is for ONE MATCH only
+  // multiple page instances need to be created running this handler
+  if (url.includes("match-beats/data")) {
+    console.log(allMatchData);
+    try {
+      const json = await response.json();
+      decryptedJSON = decryptResponse(json);
+      fs.writeFileSync(
+        `match-beats-${counter}.json`,
+        JSON.stringify(decryptedJSON, null, 2),
+      );
+      console.log("match-beats written");
+      counter += 1;
 
-            // deduce match id
-            const receivedMatchId = `${decryptedJSON.playerData.tm1Ply1Id}-${decryptedJSON.playerData.tm2Ply1Id}-${decryptedJSON.eventId}-${decryptedJSON.matchId}-${decryptedJSON.year}`;
-            let thisMatchEntry: any;
+      // cast to point type
 
-            // write to server mapping if not there yet
-            if (!allMatchData.has(receivedMatchId)) {
-                // placeholder: add logic here to insert mapping if necessary
-                const newBlankMatch: MatchEntry = {
-                    matchId: receivedMatchId,
-                    matchStatus: decryptedJSON.matchStatus,
-                    playerTeamInfo: {
-                        atpId: decryptedJSON.playerData.tm1Ply1Id,
-                        firstName: decryptedJSON.playerData.tm1Ply1FirstName,
-                        lastName: decryptedJSON.playerData.tm1Ply1LastName,
-                        seed: decryptedJSON.playerData.tm1Seed,
-                        country: decryptedJSON.playerData.tm1Ply1Country,
-                    },
-                    opponentTeamInfo: {
-                        atpId: decryptedJSON.playerData.tm2Ply1Id,
-                        firstName: decryptedJSON.playerData.tm2Ply1FirstName,
-                        lastName: decryptedJSON.playerData.tm2Ply1LastName,
-                        seed: decryptedJSON.playerData.tm2Seed,
-                        country: decryptedJSON.playerData.tm1Ply2Country,
-                    },
-                    events: [],
-                    latestPointId: null,
-                    latestPointWithRallyDataId: null
-                }
+      // deduce match id
+      const receivedMatchId = `${decryptedJSON.playerData.tm1Ply1Id}-${decryptedJSON.playerData.tm2Ply1Id}-${decryptedJSON.eventId}-${decryptedJSON.matchId}-${decryptedJSON.year}`;
+      let thisMatchEntry: any;
 
-                allMatchData.set(receivedMatchId, newBlankMatch);
-            }
+      // write to server mapping if not there yet
+      if (!allMatchData.has(receivedMatchId)) {
+        // placeholder: add logic here to insert mapping if necessary
+        const newBlankMatch: MatchEntry = {
+          matchId: receivedMatchId,
+          matchStatus: decryptedJSON.matchStatus,
+          playerTeamInfo: {
+            atpId: decryptedJSON.playerData.tm1Ply1Id,
+            firstName: decryptedJSON.playerData.tm1Ply1FirstName,
+            lastName: decryptedJSON.playerData.tm1Ply1LastName,
+            seed: decryptedJSON.playerData.tm1Seed,
+            country: decryptedJSON.playerData.tm1Ply1Country,
+          },
+          opponentTeamInfo: {
+            atpId: decryptedJSON.playerData.tm2Ply1Id,
+            firstName: decryptedJSON.playerData.tm2Ply1FirstName,
+            lastName: decryptedJSON.playerData.tm2Ply1LastName,
+            seed: decryptedJSON.playerData.tm2Seed,
+            country: decryptedJSON.playerData.tm1Ply2Country,
+          },
+          events: [],
+          latestPointId: null,
+          latestPointWithRallyDataId: null,
+        };
 
-            thisMatchEntry = allMatchData.get(receivedMatchId);
-            // update server mapping
-            if (decryptedJSON.setData) {
-                // for every point not here, bulk SSE write a list of points
-                // TODO: change endpoint on client side to accept multiple points
-                // depending on mb or cv we need to update or insert new point
-                // Throw an error if thisMatchEntry is missing (should be impossible)
-                if (!thisMatchEntry) {
-                    throw new Error(`Impossible: matchRecord not found for matchId ${receivedMatchId}`);
-                }
-                const latestPointId = thisMatchEntry.latestPointId;
-                const newPoints: any[] = [];
+        allMatchData.set(receivedMatchId, newBlankMatch);
+      }
 
-                if (!latestPointId) {
-                    // No points seen yet — collect everything
-                    for (let si = 0; si < decryptedJSON.setData.length; si++) {
-                        const set = decryptedJSON.setData[si];
-                        for (let gi = 0; gi < set.gameData.length; gi++) {
-                            const game = set.gameData[gi];
-                            for (const point of game.pointData) {
-                                newPoints.push(buildPointForMockStream(decryptedJSON, si, gi, point));
-                            }
-                        }
-                    }
-                } else {
-                    const [latestSet, latestGame, latestPoint] = latestPointId.split('_').map(Number);
-                    for (let si = 0; si < decryptedJSON.setData.length; si++) {
-                        const set = decryptedJSON.setData[si];
-                        if (set.set < latestSet) continue;
-                        for (let gi = 0; gi < set.gameData.length; gi++) {
-                            const game = set.gameData[gi];
-                            if (set.set === latestSet && game.game < latestGame) continue;
-                            for (const point of game.pointData) {
-                                if (set.set === latestSet && game.game === latestGame && point.point <= latestPoint) continue;
-                                newPoints.push(buildPointForMockStream(decryptedJSON, si, gi, point));
-                            }
-                        }
-                    }
-                }
-                
-                // Write new points to all SSE clients, then store in mapping
-                if (newPoints.length > 0) {
-                    for (const client of matchDataClients) {
-                        client.write(`data: ${JSON.stringify(newPoints)}\n\n`);
-                    }
-                    thisMatchEntry.events.push(...newPoints);
-                    thisMatchEntry.latestPointId = newPoints[newPoints.length - 1].updateId;
-                }
-            }
-
-        } catch (e) {
-            console.log('match-beats error', e);
+      thisMatchEntry = allMatchData.get(receivedMatchId);
+      // update server mapping
+      if (decryptedJSON.setData) {
+        // for every point not here, bulk SSE write a list of points
+        // TODO: change endpoint on client side to accept multiple points
+        // depending on mb or cv we need to update or insert new point
+        // Throw an error if thisMatchEntry is missing (should be impossible)
+        if (!thisMatchEntry) {
+          throw new Error(
+            `Impossible: matchRecord not found for matchId ${receivedMatchId}`,
+          );
         }
-    } else if (url.includes('he-data.json')) {
-        try {
-            const json = await response.json();
-            decryptedJSON = decryptResponseRG(json);
-            fs.writeFileSync('test.json', JSON.stringify(decryptedJSON, null, 2));
-            console.log('he-data written');
+        const latestPointId = thisMatchEntry.latestPointId;
+        const newPoints: any[] = [];
 
-            
-
-        } catch (e) {
-            console.log('he-data error', e);
+        if (!latestPointId) {
+          // No points seen yet — collect everything
+          for (let si = 0; si < decryptedJSON.setData.length; si++) {
+            const set = decryptedJSON.setData[si];
+            for (let gi = 0; gi < set.gameData.length; gi++) {
+              const game = set.gameData[gi];
+              for (const point of game.pointData) {
+                newPoints.push(
+                  buildPointForMockStream(decryptedJSON, si, gi, point),
+                );
+              }
+            }
+          }
+        } else {
+          const [latestSet, latestGame, latestPoint] = latestPointId
+            .split("_")
+            .map(Number);
+          for (let si = 0; si < decryptedJSON.setData.length; si++) {
+            const set = decryptedJSON.setData[si];
+            if (set.set < latestSet) continue;
+            for (let gi = 0; gi < set.gameData.length; gi++) {
+              const game = set.gameData[gi];
+              if (set.set === latestSet && game.game < latestGame) continue;
+              for (const point of game.pointData) {
+                if (
+                  set.set === latestSet &&
+                  game.game === latestGame &&
+                  point.point <= latestPoint
+                )
+                  continue;
+                newPoints.push(
+                  buildPointForMockStream(decryptedJSON, si, gi, point),
+                );
+              }
+            }
+          }
         }
+
+        // Write new points to all SSE clients, then store in mapping
+        if (newPoints.length > 0) {
+          for (const client of matchDataClients) {
+            client.write(`data: ${JSON.stringify(newPoints)}\n\n`);
+          }
+          thisMatchEntry.events.push(...newPoints);
+          thisMatchEntry.latestPointId =
+            newPoints[newPoints.length - 1].updateId;
+        }
+      }
+    } catch (e) {
+      console.log("match-beats error", e);
     }
+  } else if (url.includes("he-data.json")) {
+    try {
+      const json = await response.json();
+      decryptedJSON = decryptResponseRG(json);
+      fs.writeFileSync("test.json", JSON.stringify(decryptedJSON, null, 2));
+      console.log("he-data written");
+    } catch (e) {
+      console.log("he-data error", e);
+    }
+  }
 });
 
-await page.goto("https://www.atptour.com/en/scores/stats-centre/archive/2026/500/ms028", { waitUntil: 'commit', timeout: 60000 });
+await page.goto(
+  "https://www.atptour.com/en/scores/stats-centre/archive/2026/500/ms028",
+  { waitUntil: "commit", timeout: 60000 },
+);
 
 // populate in-memory mapping
 // on server start, we get the he-data.json of all live matches
 // first check if match-id key exists
-// if exists then diff with 
+// if exists then diff with
 
 // get upcoming matches and store them in memory
 const upcomingMatches = await getUpcomingMatches(
-    context,
-    "https://www.atptour.com/en/scores/current/wimbledon/540/daily-schedule"
+  context,
+  "https://www.atptour.com/en/scores/current/wimbledon/540/daily-schedule",
 );
-console.log('[Schedule] Upcoming matches:');
+console.log("[Schedule] Upcoming matches:");
 console.dir(upcomingMatches, { depth: null, colors: true });
 
 // map scraped schedule -> MatchScheduled wire events
 // tour/tournament aren't in the scrape; they come from the source URL
-const SCHEDULE_TOUR: Tour = 'men';
-const SCHEDULE_TOURNAMENT = 'Eastbourne';
+const SCHEDULE_TOUR: Tour = "men";
+const SCHEDULE_TOURNAMENT = "wimbledon";
 
-const toPlayerState = (p: UpcomingMatch['player1']): PlayerStateOld => ({
-    name: p.name,
-    country: '',                 // not in schedule data
-    seed: p.seed ?? undefined,
+const toPlayerState = (p: UpcomingMatch["player1"]): PlayerStateOld => ({
+  name: p.name,
+  country: "", // not in schedule data
+  seed: p.seed ?? undefined,
 });
 
 // stored so the SSE route can send them to each client on connect
-export const scheduledMatches: MatchScheduled[] = upcomingMatches.flatMap(day =>
-    day.matches.map((m): MatchScheduled => ({
-        type: 'scheduled',
+export const scheduledMatches: MatchScheduled[] = upcomingMatches.flatMap(
+  (day) =>
+    day.matches.map(
+      (m): MatchScheduled => ({
+        type: "scheduled",
         matchId: m.matchUrl ?? `${m.player1.name} vs ${m.player2.name}`,
         tour: SCHEDULE_TOUR,
-        tournament: SCHEDULE_TOURNAMENT,
+        tournamentId: SCHEDULE_TOURNAMENT,
         court: m.court,
         scheduledDate: day.date,
         scheduledTime: `${day.label} ${m.time}`.trim(),
         round: m.round,
         playerA: toPlayerState(m.player1),
         playerB: toPlayerState(m.player2),
-    }))
+      }),
+    ),
 );
 
 // app configs
-app.use('/', eventsRoutes);
+app.use("/", eventsRoutes);
 
 app.listen(PORT, (err) => {
-    if (err) console.log(err);
-    console.log("Server listening on PORT", PORT);
+  if (err) console.log(err);
+  console.log("Server listening on PORT", PORT);
 });
