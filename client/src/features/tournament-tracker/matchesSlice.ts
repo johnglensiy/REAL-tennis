@@ -167,4 +167,5 @@ export const matchesSlice = createSlice({
   },
 });
 
+export const { matchScheduled } = matchesSlice.actions;
 export default matchesSlice.reducer;

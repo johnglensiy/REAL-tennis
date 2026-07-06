@@ -1,5 +1,10 @@
-export type MatchStatus = 'live' | 'final' | 'upcoming' | 'suspended' | 'cancelled';
-export type Tour = 'men' | 'women';
+export type MatchStatus =
+  | "live"
+  | "final"
+  | "upcoming"
+  | "suspended"
+  | "cancelled";
+export type Tour = "men" | "women";
 
 // not local to tournament tracker, is redux global state
 // should prolly move this to a client shared types file
@@ -26,10 +31,11 @@ export interface PlayerStateOld {
 }
 
 export interface TournamentState {
-    name: string;
-    tour: Tour;
-    detail: string;
-    matches: MatchStateOld[];
+  id: string;
+  name: string;
+  tour: Tour;
+  detail: string;
+  matches: MatchStateOld[];
 }
 
 export interface Player {
