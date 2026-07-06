@@ -2,8 +2,10 @@ import {
   createEntityAdapter,
   type EntityState,
   createSlice,
+  createSelector,
   type PayloadAction,
 } from "@reduxjs/toolkit";
+import type { RootState } from "../../store";
 import type { MatchStateOld } from "./types";
 import type { MatchScheduled } from "../../../../common/types";
 
@@ -166,6 +168,18 @@ export const matchesSlice = createSlice({
     },
   },
 });
+
+export const {
+  selectAll: selectAllMatches,
+  selectById: selectMatchById,
+  selectIds: selectMatchIds,
+} = matchesAdapter.getSelectors((state: RootState) => state.matches);
+
+export const selectMatchesByTournament = createSelector(
+  [selectAllMatches, (state: RootState, tournamentId: string) => tournamentId],
+  (allMatches, tournamentId) =>
+    allMatches.filter((m) => m.tournamentId === tournamentId),
+);
 
 export const { matchScheduled } = matchesSlice.actions;
 export default matchesSlice.reducer;

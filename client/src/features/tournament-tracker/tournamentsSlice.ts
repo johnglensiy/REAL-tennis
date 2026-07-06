@@ -4,6 +4,7 @@ import {
   type PayloadAction,
 } from "@reduxjs/toolkit";
 import type { Tour } from "./types";
+import type { RootState } from "../../store";
 
 interface TournamentState {
   id: string;
@@ -41,6 +42,11 @@ const tournamentsSlice = createSlice({
     // },
   },
 });
+
+export const {
+  selectAll: selectAllTournaments,
+  selectById: selectTournamentById,
+} = tournamentsAdapter.getSelectors((state: RootState) => state.tournaments);
 
 export const {} = tournamentsSlice.actions;
 export default tournamentsSlice.reducer;
