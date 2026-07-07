@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react'
-import type { MatchEntry } from './components/MatchCard'
-import TournamentTracker, { type MatchStateOld } from './features/tournament-tracker/index'
+import { useEffect, useState } from "react";
+import type { MatchEntry } from "./components/MatchCard";
+import TournamentTracker, {
+  type MatchStateOld,
+} from "./features/tournament-tracker/index";
 
-import { liveMatchAdded, matchScheduled } from './features/tournament-tracker/tournamentsSlice'
-import { useAppDispatch } from './hooks'
+import { matchScheduled } from "./features/tournament-tracker/matchesSlice";
+import { useAppDispatch } from "./hooks";
 
-import './App.css';
+import "./App.css";
 
 export interface TeamSnapshot {
   atpId: string;
@@ -13,51 +15,53 @@ export interface TeamSnapshot {
   lastName: string;
   seed: number;
   country: string;
-  isServer: boolean; 
+  isServer: boolean;
   gameScore: string;
   setScores: (number | null)[];
 }
 
 export interface Point {
-  type: 'point',
-  id: string,
-  playerGameScore: number,
-  playerSetScores: number[] | null,
-  opponentGameScore: number,
-  opponentSetScores: number[] | null,
-  result: string,
-  rallyLength: number,
-  scorer: '1' | '2',
-  timeElapsed: number,
+  type: "point";
+  id: string;
+  playerGameScore: number;
+  playerSetScores: number[] | null;
+  opponentGameScore: number;
+  opponentSetScores: number[] | null;
+  result: string;
+  rallyLength: number;
+  scorer: "1" | "2";
+  timeElapsed: number;
 }
 
 export interface ScoreUpdate {
-  type: 'game' | 'set' | 'match',
-  id: string,
-  winner: '1' | '2',
-  playerSetScores: number[] | null,
-  opponentSetScores: number[] | null,
-  timeElapsed: number,
+  type: "game" | "set" | "match";
+  id: string;
+  winner: "1" | "2";
+  playerSetScores: number[] | null;
+  opponentSetScores: number[] | null;
+  timeElapsed: number;
 }
 
 export type MatchEvent = Point | ScoreUpdate;
 
 function App() {
   const [error, setError] = useState<string | null>(null);
-  const [allMatchData, setAllMatchData] = useState<Map<string, MatchEntry>>(new Map());
+  const [allMatchData, setAllMatchData] = useState<Map<string, MatchEntry>>(
+    new Map(),
+  );
 
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    const es = new EventSource('matchdata/stream');
+    const es = new EventSource("matchdata/stream");
     es.onmessage = (e: MessageEvent) => {
-      console.log('[SSE] event received', e.data);
+      console.log("[SSE] event received", e.data);
       const data = JSON.parse(e.data);
 
       // scheduled (upcoming) matches arrive as a single MatchScheduled object;
       // live point snapshots arrive as an array
       switch (data.type) {
-        case 'scheduled': {
+        case "scheduled": {
           dispatch(matchScheduled(data));
           return;
         }
@@ -65,39 +69,37 @@ function App() {
 
       // in-progress (live) match: a batch of point snapshots
       const points: any[] = Array.isArray(data) ? data : [data];
-      const newestPoint = points[points.length - 1];
 
-      // TODO: this is wrong because match entities should not update tournaments
-      // Eventually matches will have their own redux slice
-      const updatedMatchState: MatchStateOld = {
-        id: 'something',
-        status: 'live',
-        meta: 'Set 4 · 2:14',
-        live: 'LIVE',
-        a: {
-          name: `${newestPoint.playerTeam.firstName} ${newestPoint.playerTeam.lastName}`,
-          country: newestPoint.playerTeam.country,
-          seed: newestPoint.playerTeam.seed,
-          sets: newestPoint.playerTeam.setScores,
-          pts: newestPoint.playerTeam.gameScore,
-          serving: newestPoint.playerTeam.isServer,
-        },
-        b: {
-          name: `${newestPoint.opponentTeam.firstName} ${newestPoint.opponentTeam.lastName}`,
-          country: newestPoint.opponentTeam.country,
-          seed: newestPoint.opponentTeam.seed,
-          sets: newestPoint.opponentTeam.setScores,
-          pts: newestPoint.opponentTeam.gameScore,
-          serving: newestPoint.opponentTeam.isServer,
-        }
-      }
-
-      dispatch(liveMatchAdded(updatedMatchState));
+      // liveMatchAdded disabled for now — live matches will move to matchesSlice
+      // const newestPoint = points[points.length - 1];
+      // const updatedMatchState: MatchStateOld = {
+      //   id: "something",
+      //   status: "live",
+      //   meta: "Set 4 · 2:14",
+      //   live: "LIVE",
+      //   a: {
+      //     name: `${newestPoint.playerTeam.firstName} ${newestPoint.playerTeam.lastName}`,
+      //     country: newestPoint.playerTeam.country,
+      //     seed: newestPoint.playerTeam.seed,
+      //     sets: newestPoint.playerTeam.setScores,
+      //     pts: newestPoint.playerTeam.gameScore,
+      //     serving: newestPoint.playerTeam.isServer,
+      //   },
+      //   b: {
+      //     name: `${newestPoint.opponentTeam.firstName} ${newestPoint.opponentTeam.lastName}`,
+      //     country: newestPoint.opponentTeam.country,
+      //     seed: newestPoint.opponentTeam.seed,
+      //     sets: newestPoint.opponentTeam.setScores,
+      //     pts: newestPoint.opponentTeam.gameScore,
+      //     serving: newestPoint.opponentTeam.isServer,
+      //   },
+      // };
+      // dispatch(liveMatchAdded(updatedMatchState));
 
       // old allMatchData mapping state
       // technically this could be simplified by getting the last point
       // but we would lose all points in the middle
-      setAllMatchData(prev => {
+      setAllMatchData((prev) => {
         const nextMap = new Map(prev);
 
         for (const json of points) {
@@ -105,7 +107,7 @@ function App() {
           const newEvents: MatchEvent[] = [...(entryToUpdate?.events ?? [])];
 
           newEvents.push({
-            type: 'point',
+            type: "point",
             id: json.pointId,
             playerGameScore: json.playerGameScore,
             playerSetScores: json.playerSetScores,
@@ -118,11 +120,32 @@ function App() {
           });
 
           if (json.isMatchComplete) {
-            newEvents.push({ type: 'match', id: `${json.pointId}-match`, winner: json.scorer, playerSetScores: json.playerSetScores, opponentSetScores: json.opponentSetScores, timeElapsed: json.timeElapsedInSeconds });
+            newEvents.push({
+              type: "match",
+              id: `${json.pointId}-match`,
+              winner: json.scorer,
+              playerSetScores: json.playerSetScores,
+              opponentSetScores: json.opponentSetScores,
+              timeElapsed: json.timeElapsedInSeconds,
+            });
           } else if (json.isSetComplete) {
-            newEvents.push({ type: 'set', id: `${json.pointId}-set`, winner: json.scorer, playerSetScores: json.playerSetScores, opponentSetScores: json.opponentSetScores, timeElapsed: json.timeElapsedInSeconds });
+            newEvents.push({
+              type: "set",
+              id: `${json.pointId}-set`,
+              winner: json.scorer,
+              playerSetScores: json.playerSetScores,
+              opponentSetScores: json.opponentSetScores,
+              timeElapsed: json.timeElapsedInSeconds,
+            });
           } else if (json.isGameComplete) {
-            newEvents.push({ type: 'game', id: `${json.pointId}-game`, winner: json.scorer, playerSetScores: json.playerSetScores, opponentSetScores: json.opponentSetScores, timeElapsed: json.timeElapsedInSeconds });
+            newEvents.push({
+              type: "game",
+              id: `${json.pointId}-game`,
+              winner: json.scorer,
+              playerSetScores: json.playerSetScores,
+              opponentSetScores: json.opponentSetScores,
+              timeElapsed: json.timeElapsedInSeconds,
+            });
           }
 
           nextMap.set(json.matchId, {
@@ -141,21 +164,22 @@ function App() {
 
       console.log(`Received ${points.length} new point(s) from stream`);
     };
-    es.onerror = () => setError('Lost connection to match data stream');
+    es.onerror = () => setError("Lost connection to match data stream");
     return () => es.close();
   }, []);
 
-  if (error) return (
-    <div className="flex items-center justify-center h-screen text-gray-400 text-sm">
-      Error: {error}
-    </div>
-  );
+  if (error)
+    return (
+      <div className="flex items-center justify-center h-screen text-gray-400 text-sm">
+        Error: {error}
+      </div>
+    );
 
   // if (!data) return <div>Loading winners...</div>;
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
-      <TournamentTracker liveMatchData={allMatchData}/>
+      <TournamentTracker liveMatchData={allMatchData} />
 
       {/* Old code */}
       {/* Title */}
@@ -176,7 +200,6 @@ function App() {
           ))}
         </div>
       </div> */}
-
     </div>
   );
 }
