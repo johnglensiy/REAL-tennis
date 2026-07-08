@@ -6,8 +6,8 @@ import {
   type PayloadAction,
 } from "@reduxjs/toolkit";
 import type { RootState } from "../../store";
-import type { MatchStateOld } from "./types";
-import type { MatchScheduled } from "../../../../common/types";
+import type { MatchStateOld, PlayerStateOld } from "./types";
+import type { MatchScheduled, ScoreUpdated } from "../../../../common/types";
 
 interface MatchesState extends EntityState<MatchStateOld, string> {}
 
@@ -135,6 +135,12 @@ const STUB_MATCHES = [
   },
 ];
 
+// local YYYY-MM-DD (avoids toISOString's UTC shift) — live matches are "today"
+const todayLocalISO = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
+
 const matchesAdapter = createEntityAdapter<MatchStateOld>();
 
 const initialState: MatchesState = matchesAdapter.setAll(
@@ -166,6 +172,43 @@ export const matchesSlice = createSlice({
         b: ev.playerB,
       });
     },
+
+    scoreUpdated(state, action: PayloadAction<ScoreUpdated>) {
+      const ev = action.payload;
+      const existing = state.entities[ev.matchId];
+
+      // ScoreUpdated carries no player identity — merge scores onto the
+      // existing match (from the schedule) so names/country/seed are kept.
+      // If the match isn't known yet, it's created with empty player info.
+      const a: PlayerStateOld = {
+        name: ev.playerScore.name,
+        country: ev.playerScore.country,
+        seed: ev.playerScore.seed,
+        sets: ev.playerScore.setScores.filter((s): s is number => s !== null),
+        pts: ev.playerScore.gameScore,
+        serving: ev.server === "p",
+      };
+      const b: PlayerStateOld = {
+        name: ev.opponentScore.name,
+        country: ev.opponentScore.country,
+        seed: ev.opponentScore.seed,
+        sets: ev.opponentScore.setScores.filter((s): s is number => s !== null),
+        pts: ev.opponentScore.gameScore,
+        serving: ev.server === "o",
+      };
+
+      matchesAdapter.upsertOne(state, {
+        id: ev.matchId,
+        tournamentId: existing?.tournamentId ?? "wimbledon",
+        status: "live",
+        // no schedule to merge onto — stamp today so it shows on the live column
+        scheduledDate: existing?.scheduledDate ?? todayLocalISO(),
+        meta: existing?.meta ?? "",
+        live: "LIVE",
+        a,
+        b,
+      });
+    },
   },
 });
 
@@ -181,5 +224,5 @@ export const selectMatchesByTournament = createSelector(
     allMatches.filter((m) => m.tournamentId === tournamentId),
 );
 
-export const { matchScheduled } = matchesSlice.actions;
+export const { matchScheduled, scoreUpdated } = matchesSlice.actions;
 export default matchesSlice.reducer;

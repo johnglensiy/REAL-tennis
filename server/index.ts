@@ -13,6 +13,7 @@ import { UpcomingMatch } from "./utils/getUpcomingMatches.ts";
 import { MatchScheduled, PlayerStateOld, Tour } from "../common/types.ts";
 import { decryptResponse, decryptResponseRG } from "./scripts/rolandgarros.ts";
 import { getUpcomingMatches } from "./utils/getUpcomingMatches.ts";
+import { getLiveMatches } from "./utils/getLiveMatches.ts";
 
 const app = express();
 const PORT = 3000;
@@ -226,6 +227,19 @@ export const scheduledMatches: MatchScheduled[] = upcomingMatches.flatMap(
         playerB: toPlayerState(m.player2),
       }),
     ),
+);
+
+// stream live scores: broadcast each ScoreUpdated to all SSE clients
+await getLiveMatches(
+  context,
+  "https://www.atptour.com/en/scores/current/wimbledon/540/live-scores",
+  (updates) => {
+    for (const client of matchDataClients) {
+      for (const u of updates) {
+        client.write(`data: ${JSON.stringify(u)}\n\n`);
+      }
+    }
+  },
 );
 
 // app configs

@@ -35,7 +35,7 @@ export default function MatchCard({ m, livePulse }: { m: MatchStateOld; livePuls
         width: 344,
         scrollSnapAlign: 'start',
         background: 'var(--paper)',
-        border: '1px solid ' + (isLive && livePulse ? 'var(--hot)' : 'var(--stroke)'),
+        border: '1px solid ' + (isLive ? 'var(--hot)' : 'var(--stroke)'),
         borderRadius: 8,
         padding: '9px 12px 8px',
         display: 'flex', flexDirection: 'column',

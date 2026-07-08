@@ -4,7 +4,10 @@ import TournamentTracker, {
   type MatchStateOld,
 } from "./features/tournament-tracker/index";
 
-import { matchScheduled } from "./features/tournament-tracker/matchesSlice";
+import {
+  matchScheduled,
+  scoreUpdated,
+} from "./features/tournament-tracker/matchesSlice";
 import { useAppDispatch } from "./hooks";
 
 import "./App.css";
@@ -63,6 +66,10 @@ function App() {
       switch (data.type) {
         case "scheduled": {
           dispatch(matchScheduled(data));
+          return;
+        }
+        case "score": {
+          dispatch(scoreUpdated(data));
           return;
         }
       }

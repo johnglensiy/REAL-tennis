@@ -28,6 +28,9 @@ export interface TournamentState {
 }
 
 export interface SideScore {
+  name: string;
+  country: string;
+  seed?: string;
   gameScore: string;
   setScores: (number | null)[];
 }
