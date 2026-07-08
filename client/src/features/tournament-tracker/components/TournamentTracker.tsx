@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 
 import TournamentSection from "./TournamentSection";
+import PointHistory from "./PointHistory";
 import type { Tour, Tournament } from "../types";
 
 // to be replaced with TournamentsSlice
@@ -336,6 +337,9 @@ function TournamentTracker({ liveMatchData }: TournamentTrackerProps) {
         </span>
         <span className="mono note">Official ATP / WTA data</span>
       </div>
+
+      {/* point-by-point history for the match */}
+      <PointHistory />
 
       <div style={{ height: 16 }} />
     </div>
