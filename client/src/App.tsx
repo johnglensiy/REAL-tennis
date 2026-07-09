@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import type { MatchEntry } from "./components/MatchCard";
-import TournamentTracker, {
-  type MatchStateOld,
-} from "./features/tournament-tracker/index";
+import type { MatchStateOld } from "./features/tournament-tracker/index";
+import { StackNavigator } from "./features/tournament-tracker/StackNavigator";
 
 import {
   matchScheduled,
@@ -186,7 +185,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
-      <TournamentTracker liveMatchData={allMatchData} />
+      <StackNavigator />
 
       {/* Old code */}
       {/* Title */}

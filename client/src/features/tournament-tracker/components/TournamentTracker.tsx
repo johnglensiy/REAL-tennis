@@ -179,10 +179,12 @@ function Tabs({
 }
 
 interface TournamentTrackerProps {
-  liveMatchData: Map<string, MatchEntry>;
+  liveMatchData?: Map<string, MatchEntry>;
 }
 
-function TournamentTracker({ liveMatchData }: TournamentTrackerProps) {
+function TournamentTracker({
+  liveMatchData = new Map(),
+}: TournamentTrackerProps) {
   console.log("liveMatchData size:", liveMatchData.size);
   const [tour, setTour] = useState<Tour>("men");
   const dates = useMemo(() => calcNearestDates(), []);
