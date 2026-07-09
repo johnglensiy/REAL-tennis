@@ -30,6 +30,7 @@ export default function PlayerLine({ p, status }: { p: Player; status: string })
         gap: 8,
         padding: '6px 0',
       }}>
+        {/* country flag — temporarily replaced by hardcoded avatar to test the look
         <span className="mono" style={{
             width: 24, height: 16, borderRadius: 2,
             border: '1px solid var(--stroke)', background: 'var(--bg)',
@@ -38,6 +39,15 @@ export default function PlayerLine({ p, status }: { p: Player; status: string })
         }}>
             {p.country}
         </span>
+        */}
+        <img
+            src="https://images.wimbledon.com/square_nobg/atpd643.png"
+            alt=""
+            style={{
+                width: 24, height: 24, borderRadius: '50%',
+                objectFit: 'cover', background: 'var(--ink-2)', flex: '0 0 auto',
+            }}
+        />
 
         <div style={{ minWidth: 0, display: 'flex', alignItems: 'baseline', gap: 5 }}>
             <span style={{

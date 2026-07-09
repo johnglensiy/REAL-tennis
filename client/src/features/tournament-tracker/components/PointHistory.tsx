@@ -30,6 +30,29 @@ export interface PointHistoryEntry {
   MatchWinner: string;
 }
 
+function Avatar({ isP1 }: { isP1: boolean }) {
+  // Felix Auger-Aliassime is P1, Djokovic is P2
+  const id = isP1 ? "atpag37" : "atpd643";
+  return (
+    <div
+      style={{
+        flex: "0 0 auto",
+        width: 32,
+        height: 32,
+        borderRadius: "50%",
+        overflow: "hidden",
+        background: isP1 ? "var(--accent-ink)" : "var(--ink-2)",
+      }}
+    >
+      <img
+        src={`https://images.wimbledon.com/square_nobg/${id}.png`}
+        alt=""
+        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+      />
+    </div>
+  );
+}
+
 function Badge({ label, tone }: { label: string; tone: "hot" | "mute" }) {
   return (
     <span
@@ -42,7 +65,8 @@ function Badge({ label, tone }: { label: string; tone: "hot" | "mute" }) {
         padding: "2px 5px",
         borderRadius: 3,
         whiteSpace: "nowrap",
-        border: "1px solid " + (tone === "hot" ? "var(--hot)" : "var(--stroke)"),
+        border:
+          "1px solid " + (tone === "hot" ? "var(--hot)" : "var(--stroke)"),
         color: tone === "hot" ? "var(--hot)" : "var(--mute)",
         background: "var(--paper)",
       }}
@@ -63,69 +87,86 @@ function PointCard({ p }: { p: PointHistoryEntry }) {
         scrollSnapAlign: "start",
         background: "var(--paper)",
         border: "1px solid var(--stroke)",
-        borderLeft: "3px solid " + (winnerIsP1 ? "var(--accent-ink)" : "var(--ink-2)"),
+        borderLeft:
+          "3px solid " + (winnerIsP1 ? "var(--accent-ink)" : "var(--ink-2)"),
         borderRadius: 8,
         padding: "9px 12px 8px",
         display: "flex",
-        flexDirection: "column",
-        gap: 6,
+        flexDirection: "row",
+        alignItems: "flex-start",
+        gap: 10,
       }}
     >
-      {/* header: set/game left, point# + elapsed right */}
+      {/* winner avatar */}
+      <Avatar isP1={winnerIsP1} />
+
       <div
         style={{
+          flex: 1,
+          minWidth: 0,
           display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
+          flexDirection: "column",
+          gap: 6,
         }}
       >
-        <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>
-          Set {p.SetNo} · Game {p.GameNo}
-        </span>
-        <span className="mono note">
-          #{p.PointNumber} · {p.ElapsedTime}
-        </span>
-      </div>
+        {/* header: set/game left, point# + elapsed right */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>
+            Set {p.SetNo} · Game {p.GameNo}
+          </span>
+          <span className="mono note">
+            #{p.PointNumber} · {p.ElapsedTime}
+          </span>
+        </div>
 
-      {/* commentary line */}
-      <span style={{ fontSize: 13, color: "var(--ink-2)", lineHeight: 1.3 }}>
-        {p.Sentence}
-      </span>
+        {/* commentary line */}
+        <span style={{ fontSize: 13, color: "var(--ink-2)", lineHeight: 1.3 }}>
+          {p.Sentence}
+        </span>
 
-      {/* score line */}
-      <div
-        className="mono"
-        style={{
-          fontSize: 12,
-          color: "var(--mute)",
-          display: "flex",
-          gap: 10,
-          flexWrap: "wrap",
-        }}
-      >
-        <span style={{ color: "var(--ink)", fontWeight: 700 }}>
-          {p.P1Score}–{p.P2Score}
-        </span>
-        <span>
-          Games {p.P1GamesWon}–{p.P2GamesWon}
-        </span>
-        <span>
-          Sets {p.P1SetsWon}–{p.P2SetsWon}
-        </span>
-      </div>
+        {/* score line */}
+        <div
+          className="mono"
+          style={{
+            fontSize: 12,
+            color: "var(--mute)",
+            display: "flex",
+            gap: 10,
+            flexWrap: "wrap",
+          }}
+        >
+          <span style={{ color: "var(--ink)", fontWeight: 700 }}>
+            {p.P1Score}–{p.P2Score}
+          </span>
+          <span>
+            Games {p.P1GamesWon}–{p.P2GamesWon}
+          </span>
+          <span>
+            Sets {p.P1SetsWon}–{p.P2SetsWon}
+          </span>
+        </div>
 
-      {/* badges: shot outcome / rally / serve speed */}
-      <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-        {p.Ace !== "0" && <Badge label="Ace" tone="hot" />}
-        {p.DoubleFault !== "0" && <Badge label="Double Fault" tone="hot" />}
-        {p.Winner !== "0" && <Badge label="Winner" tone="mute" />}
-        {p.UnforcedError !== "0" && <Badge label="Unforced Error" tone="mute" />}
-        {Number(p.RallyCount) > 0 && (
-          <Badge label={`${p.RallyCount}-shot rally`} tone="mute" />
-        )}
-        {Number(p.Speed_MPH) > 0 && (
-          <Badge label={`${p.Speed_MPH} mph`} tone="mute" />
-        )}
+        {/* badges: shot outcome / rally / serve speed */}
+        <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+          {p.Ace !== "0" && <Badge label="Ace" tone="hot" />}
+          {p.DoubleFault !== "0" && <Badge label="Double Fault" tone="hot" />}
+          {p.Winner !== "0" && <Badge label="Winner" tone="mute" />}
+          {p.UnforcedError !== "0" && (
+            <Badge label="Unforced Error" tone="mute" />
+          )}
+          {Number(p.RallyCount) > 0 && (
+            <Badge label={`${p.RallyCount}-shot rally`} tone="mute" />
+          )}
+          {Number(p.Speed_MPH) > 0 && (
+            <Badge label={`${p.Speed_MPH} mph`} tone="mute" />
+          )}
+        </div>
       </div>
     </div>
   );
