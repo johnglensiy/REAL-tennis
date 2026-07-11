@@ -9,6 +9,8 @@
 // project with React 18+; no other dependencies.
 
 import React, { useState, useMemo, type ReactNode } from "react";
+import { useAppDispatch } from "../../../hooks";
+import { screenPopped } from "../navigationSlice";
 
 // ─────────────────────────────────────────────────────────────
 // Types
@@ -1056,6 +1058,7 @@ function MatchHeader({
   duration,
   backHref,
 }: MatchHeaderProps) {
+  const dispatch = useAppDispatch();
   return (
     <div
       style={{
@@ -1078,6 +1081,7 @@ function MatchHeader({
             color: "var(--ink-2)",
             textDecoration: "none",
           }}
+          onClick={() => dispatch(screenPopped())}
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path
