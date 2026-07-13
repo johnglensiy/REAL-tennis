@@ -24,6 +24,7 @@ export interface PlayerStateOld {
   name: string;
   country: string;
   seed?: string;
+  atpId?: string;
   sets?: number[];
   pts?: string;
   serving?: boolean;

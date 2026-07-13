@@ -207,6 +207,7 @@ const SCHEDULE_TOURNAMENT = "wimbledon";
 const toPlayerState = (p: UpcomingMatch["player1"]): PlayerStateOld => ({
   name: p.name,
   country: "", // not in schedule data
+  atpId: p.atpId,
   seed: p.seed ?? undefined,
 });
 

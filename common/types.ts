@@ -13,6 +13,7 @@ export interface MatchStateOld {
 export interface PlayerStateOld {
   name: string;
   country: string;
+  atpId: string | null;
   seed?: string;
   sets?: number[];
   pts?: string;

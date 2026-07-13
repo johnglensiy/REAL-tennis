@@ -12,12 +12,13 @@ import React, { useState, useMemo, type ReactNode } from "react";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { screenPopped } from "../navigationSlice";
 import { selectMatchById } from "../matchesSlice";
+import { FeedItem, FALLBACK_ATP_ID } from "./FeedItem";
 
 // ─────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────
 
-type Who = "A" | "B";
+export type Who = "A" | "B";
 type MatchState = "Live" | "Final";
 type Theme = "paper" | "night" | "clay" | "grass";
 type Font = "plex" | "grotesk" | "archivo" | "mono";
@@ -30,10 +31,11 @@ interface SetScore {
   future?: boolean;
 }
 
-interface PlayerInfo {
+export interface PlayerInfo {
   name: string;
   seed: string;
   country: string;
+  atpId: string;
 }
 
 interface Match {
@@ -60,7 +62,7 @@ interface FeedDetail {
   kmh: string;
 }
 
-interface FeedEvent {
+export interface FeedEvent {
   set: number;
   game: number;
   time: string;
@@ -138,10 +140,6 @@ const MATCH_STATIC = {
   duration: "2:14",
 };
 
-const ATP_ID: Record<Who, string> = { A: "s0ag", B: "d643" };
-function playerPhoto(who: Who) {
-  return `https://images.wimbledon.com/square_nobg/atp${ATP_ID[who]}.png`;
-}
 
 const FEED: FeedEvent[] = [
   {
@@ -728,119 +726,6 @@ function Momentum() {
 // Point feed
 // ─────────────────────────────────────────────────────────────
 
-function FeedItem({
-  item,
-  players,
-  avatarSize = 32,
-  statLines = [],
-}: {
-  item: FeedEvent;
-  players: Record<Who, PlayerInfo>;
-  avatarSize?: number;
-  statLines?: string[];
-}) {
-  const who = item.who;
-  const isSet = item.tag === "SET";
-  if (isSet) {
-    return (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          padding: "12px 16px",
-          background: "var(--bg)",
-          borderTop: "1px dashed var(--stroke)",
-          borderBottom: "1px dashed var(--stroke)",
-        }}
-      >
-        <div style={{ flex: 1, height: 1, background: "var(--stroke)" }} />
-        <span
-          className="mono"
-          style={{
-            fontSize: 11,
-            color: "var(--ink-2)",
-            fontWeight: 600,
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
-          }}
-        >
-          End of Set {item.set - 1} · {item.text.replace("SET A — ", "")}
-        </span>
-        <div style={{ flex: 1, height: 1, background: "var(--stroke)" }} />
-      </div>
-    );
-  }
-
-  return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: avatarSize + "px 1fr auto",
-        gap: 12,
-        alignItems: "center",
-        padding: "12px 16px",
-        borderBottom: "1px solid var(--stroke-soft)",
-        background: "var(--paper)",
-      }}
-    >
-      <div
-        style={{
-          width: avatarSize,
-          height: avatarSize,
-          borderRadius: "50%",
-          border: "1px solid var(--stroke)",
-          background: who === "A" ? "#fff" : "var(--bg)",
-          overflow: "hidden",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <img
-          src={playerPhoto(who)}
-          alt={players[who]?.name}
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-        />
-      </div>
-
-      <div>
-        <div style={{ marginBottom: 2 }}>
-          <span
-            className="mono"
-            style={{
-              fontSize: 10,
-              color: "var(--mute)",
-              letterSpacing: "0.06em",
-            }}
-          >
-            S{item.set} · G{item.game} · {item.time}
-          </span>
-        </div>
-        <div style={{ fontSize: 14, color: "var(--ink)", fontWeight: 500 }}>
-          {players[who]?.name.split(" ").slice(-1)[0]} · {item.text}
-        </div>
-        {statLines.map((line, i) => (
-          <div
-            key={i}
-            style={{
-              fontSize: 12,
-              color: "var(--mute)",
-              fontWeight: 500,
-              marginTop: 4,
-            }}
-          >
-            {line}
-          </div>
-        ))}
-      </div>
-
-      <div className="mono" style={{ fontSize: 11, color: "var(--mute)" }}>
-        ›
-      </div>
-    </div>
-  );
-}
 
 // ─────────────────────────────────────────────────────────────
 // Point detail card
@@ -1179,8 +1064,18 @@ export default function TennisScoreboard({ matchId }: { matchId?: string }) {
       bestOf: s.bestOf,
       serving: s.server,
       players: {
-        A: { name: reduxMatch?.a.name ?? s.playerA, seed: s.seedA, country: s.countryA },
-        B: { name: reduxMatch?.b.name ?? s.playerB, seed: s.seedB, country: s.countryB },
+        A: {
+          name: reduxMatch?.a.name ?? s.playerA,
+          seed: s.seedA,
+          country: s.countryA,
+          atpId: reduxMatch?.a.atpId ?? FALLBACK_ATP_ID.A,
+        },
+        B: {
+          name: reduxMatch?.b.name ?? s.playerB,
+          seed: s.seedB,
+          country: s.countryB,
+          atpId: reduxMatch?.b.atpId ?? FALLBACK_ATP_ID.B,
+        },
       },
       sets,
       point: { a: s.pointA, b: s.pointB },

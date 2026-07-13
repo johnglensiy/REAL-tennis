@@ -42,3 +42,5 @@ client/dist/
 # logs
 *.log
 npm-debug.log*
+
+.claude

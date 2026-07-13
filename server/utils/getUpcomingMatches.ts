@@ -4,8 +4,8 @@ export interface UpcomingMatch {
     court: string;
     time: string;
     round: string;
-    player1: { name: string; seed: string | null; entry: string | null };
-    player2: { name: string; seed: string | null; entry: string | null };
+    player1: { name: string; seed: string | null; entry: string | null; atpId: string | null };
+    player2: { name: string; seed: string | null; entry: string | null; atpId: string | null };
     matchUrl: string | null;
 }
 
@@ -35,6 +35,37 @@ const toISODate = (raw: string): string => {
     const month = String(monthIdx + 1).padStart(2, '0');
     return `${m[3]}-${month}-${day}`;
 };
+
+// ATP player ids are short alphanumeric tokens, e.g. "d923", "r0go", "s0ag",
+// "cd85" — letters and digits mixed, so no fixed letter/digit split.
+const ATP_ID_RE = /^[a-z0-9]{3,6}$/i;
+
+/**
+ * Extracts the ATP player id from a profile link href, e.g.
+ * "/en/players/damir-dzumhur/d923/overview" -> "d923". The href is the
+ * reliable source: it's always in the DOM, unlike the headshot image whose
+ * `src` may not be populated yet (lazy-loaded / off-screen rows).
+ */
+const atpIdFromHref = (href: string): string | null => {
+    const m = href.match(/\/players\/[^/]+\/([a-z0-9]+)(?:\/|$)/i);
+    return m && ATP_ID_RE.test(m[1]) ? m[1].toLowerCase() : null;
+};
+
+/**
+ * Fallback: extracts the id from a headshot image `src`, e.g.
+ * "/-/media/alias/player-headshot/d923" -> "d923". Query strings, hashes and
+ * any extension are stripped. Returns null for empty/placeholder sources.
+ */
+const atpIdFromImg = (src: string): string | null => {
+    if (!src) return null;
+    const path = src.split(/[?#]/)[0].replace(/\/+$/, '');
+    const last = path.substring(path.lastIndexOf('/') + 1).replace(/\.[a-z0-9]+$/i, '');
+    return ATP_ID_RE.test(last) ? last.toLowerCase() : null;
+};
+
+/** Resolve a player's ATP id, preferring the profile href over the image src. */
+const extractAtpId = (href: string, imgSrc: string): string | null =>
+    atpIdFromHref(href) ?? atpIdFromImg(imgSrc);
 
 /**
  * Scrapes the ATP daily-schedule page for upcoming singles matches, grouped by day.
@@ -100,18 +131,23 @@ export const getUpcomingMatches = async (
                     const players = el.querySelector('.schedule-players');
                     const player1Raw = players?.querySelector('.player')?.textContent ?? '';
                     const player2Raw = players?.querySelector('.opponent')?.textContent ?? '';
+                    const player1ImgSrc = players?.querySelector('.player img.player-image')?.getAttribute('src') ?? '';
+                    const player2ImgSrc = players?.querySelector('.opponent img.player-image')?.getAttribute('src') ?? '';
+                    // profile link carries the ATP id reliably (e.g. /en/players/damir-dzumhur/d923/overview)
+                    const player1Href = players?.querySelector('.player .name a')?.getAttribute('href') ?? '';
+                    const player2Href = players?.querySelector('.opponent .name a')?.getAttribute('href') ?? '';
                     const matchUrl = el.querySelector('a[href*="scores"]')?.getAttribute('href') ?? null;
                     const matchType = el.querySelector('.schedule-cta .match-type')?.textContent?.trim() ?? '';
-                    return { locationText, timeText, roundText, player1Raw, player2Raw, matchUrl, matchType };
+                    return { locationText, timeText, roundText, player1Raw, player2Raw, player1ImgSrc, player2ImgSrc, player1Href, player2Href, matchUrl, matchType };
                 });
             });
 
-            const parsePlayer = (raw: string) => {
+            const parsePlayer = (raw: string, imgSrc: string, href: string) => {
                 const cleaned = raw.replace(/\s+/g, ' ').trim();
                 const seedMatch = cleaned.match(/\((\d+)\)/);
                 const entryMatch = cleaned.match(/\(([A-Z]{1,3})\)/);
                 const name = cleaned.replace(/\(\d+\)/g, '').replace(/\([A-Z]{1,3}\)/g, '').replace(/\s+/g, ' ').trim();
-                return { name, seed: seedMatch?.[1] ?? null, entry: entryMatch?.[1] ?? null };
+                return { name, seed: seedMatch?.[1] ?? null, entry: entryMatch?.[1] ?? null, atpId: extractAtpId(href, imgSrc) };
             };
 
             let currentCourt = '';
@@ -126,8 +162,8 @@ export const getUpcomingMatches = async (
                 // skip WTA matches for now
                 if (raw.matchType === 'WTA') continue;
 
-                const p1 = parsePlayer(raw.player1Raw);
-                const p2 = parsePlayer(raw.player2Raw);
+                const p1 = parsePlayer(raw.player1Raw, raw.player1ImgSrc, raw.player1Href);
+                const p2 = parsePlayer(raw.player2Raw, raw.player2ImgSrc, raw.player2Href);
                 if (!p1.name && !p2.name) continue;
 
                 // doubles: player names contain a space-separated pair (two initials + surnames)
