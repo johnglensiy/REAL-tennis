@@ -1,5 +1,7 @@
 import type { MatchStateOld } from "../../../../../common/types";
 import PlayerLine from "./PlayerLine";
+import { useAppDispatch } from "../../../hooks";
+import { screenPushed } from "../navigationSlice";
 
 // function StatusTag({ m }: { m: Match }) {
 //   if (m.status === 'live') {
@@ -29,9 +31,13 @@ import PlayerLine from "./PlayerLine";
 // }
 
 export default function MatchCard({ m, livePulse }: { m: MatchStateOld; livePulse?: boolean }) {
+    const dispatch = useAppDispatch();
     const isLive = m.status === 'live';
     const inner = (
-      <div className={isLive && livePulse ? 'live-pulse' : undefined} style={{
+      <div
+        className={isLive && livePulse ? 'live-pulse' : undefined}
+        onClick={() => dispatch(screenPushed({ name: 'Match', params: { matchId: m.id } }))}
+        style={{
         width: 344,
         scrollSnapAlign: 'start',
         background: 'var(--paper)',
@@ -39,7 +45,7 @@ export default function MatchCard({ m, livePulse }: { m: MatchStateOld; livePuls
         borderRadius: 8,
         padding: '9px 12px 8px',
         display: 'flex', flexDirection: 'column',
-        cursor: m.href ? 'pointer' : 'default',
+        cursor: 'pointer',
         position: 'relative',
       }}>
         {/* card header: round + court on left and match data right */}
@@ -74,8 +80,5 @@ export default function MatchCard({ m, livePulse }: { m: MatchStateOld; livePuls
       </div>
     );
   
-    if (m.href) {
-      return <a href={m.href} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>{inner}</a>;
-    }
     return inner;
 }

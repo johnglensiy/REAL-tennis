@@ -194,7 +194,7 @@ await page.goto(
 // get upcoming matches and store them in memory
 const upcomingMatches = await getUpcomingMatches(
   context,
-  "https://www.atptour.com/en/scores/current/wimbledon/540/daily-schedule",
+  "https://www.atptour.com/en/scores/current/umag/439/daily-schedule",
 );
 console.log("[Schedule] Upcoming matches:");
 console.dir(upcomingMatches, { depth: null, colors: true });
@@ -232,7 +232,7 @@ export const scheduledMatches: MatchScheduled[] = upcomingMatches.flatMap(
 // stream live scores: broadcast each ScoreUpdated to all SSE clients
 await getLiveMatches(
   context,
-  "https://www.atptour.com/en/scores/current/wimbledon/540/live-scores",
+  "https://www.atptour.com/en/scores/current/umag/439/live-scores",
   (updates) => {
     for (const client of matchDataClients) {
       for (const u of updates) {

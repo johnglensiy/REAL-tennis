@@ -9,8 +9,9 @@
 // project with React 18+; no other dependencies.
 
 import React, { useState, useMemo, type ReactNode } from "react";
-import { useAppDispatch } from "../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { screenPopped } from "../navigationSlice";
+import { selectMatchById } from "../matchesSlice";
 
 // ─────────────────────────────────────────────────────────────
 // Types
@@ -1135,9 +1136,15 @@ function MatchHeader({
 // Screen
 // ─────────────────────────────────────────────────────────────
 
-export default function TennisScoreboard() {
+export default function TennisScoreboard({ matchId }: { matchId?: string }) {
   const [tab, setTab] = useState<TabName>("Points");
   const s = SETTINGS;
+
+  // when a matchId is passed (via the nav stack params), pull the live match
+  // from the redux slice so names reflect real data instead of the constants
+  const reduxMatch = useAppSelector((state) =>
+    matchId ? selectMatchById(state, matchId) : undefined,
+  );
 
   const match = useMemo((): Match => {
     const setsWon = {
@@ -1172,14 +1179,14 @@ export default function TennisScoreboard() {
       bestOf: s.bestOf,
       serving: s.server,
       players: {
-        A: { name: s.playerA, seed: s.seedA, country: s.countryA },
-        B: { name: s.playerB, seed: s.seedB, country: s.countryB },
+        A: { name: reduxMatch?.a.name ?? s.playerA, seed: s.seedA, country: s.countryA },
+        B: { name: reduxMatch?.b.name ?? s.playerB, seed: s.seedB, country: s.countryB },
       },
       sets,
       point: { a: s.pointA, b: s.pointB },
       setsWon,
     };
-  }, []);
+  }, [reduxMatch]);
 
   return (
     <div

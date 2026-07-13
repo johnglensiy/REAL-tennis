@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import type { MatchEntry } from "./components/MatchCard";
-import type { MatchStateOld } from "./features/tournament-tracker/index";
 import { StackNavigator } from "./features/tournament-tracker/StackNavigator";
 
 import {
@@ -48,9 +47,7 @@ export type MatchEvent = Point | ScoreUpdate;
 
 function App() {
   const [error, setError] = useState<string | null>(null);
-  const [allMatchData, setAllMatchData] = useState<Map<string, MatchEntry>>(
-    new Map(),
-  );
+  const [, setAllMatchData] = useState<Map<string, MatchEntry>>(new Map());
 
   const dispatch = useAppDispatch();
 
