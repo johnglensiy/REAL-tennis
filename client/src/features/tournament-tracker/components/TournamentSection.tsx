@@ -25,7 +25,7 @@ export default function TournamentSection({ t, livePulse }: { t: TournamentState
       <div className="hscroll" style={{
         display: 'grid',
         gridAutoFlow: 'column',
-        gridTemplateRows: 'repeat(2, auto)',
+        gridTemplateRows: 'repeat(3, auto)',
         gridAutoColumns: 'max-content',
         alignItems: 'start',
         gap: 10,
