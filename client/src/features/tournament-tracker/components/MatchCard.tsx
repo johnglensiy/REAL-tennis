@@ -3,6 +3,17 @@ import PlayerLine from "./PlayerLine";
 import { useAppDispatch } from "../../../hooks";
 import { screenPushed } from "../navigationSlice";
 
+/**
+ * Reduces a verbose schedule time like "Day 4 Starts At 16:00" to just "16:00".
+ * "Not Before" slots are tentative (`tentative: true`) and get a trailing
+ * superscript asterisk at render. Falls back to the raw string if no HH:MM.
+ */
+function formatTime(raw?: string): { time: string; tentative: boolean } {
+  if (!raw) return { time: "", tentative: false };
+  const time = raw.match(/\b\d{1,2}:\d{2}\b/)?.[0] ?? raw;
+  return { time, tentative: /not before/i.test(raw) };
+}
+
 // function StatusTag({ m }: { m: Match }) {
 //   if (m.status === 'live') {
 //     return (
@@ -52,12 +63,22 @@ export default function MatchCard({ m, livePulse }: { m: MatchStateOld; livePuls
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2, minHeight: 20 }}>
           <span style={{
             display: 'inline-flex', alignItems: 'center', gap: 6, minWidth: 0,
-            fontSize: 13, whiteSpace: 'nowrap',
+            fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden',
           }}>
-            <span style={{ fontWeight: 600, color: 'var(--ink)' }}>Quarterfinal</span>
-            <span style={{ color: 'var(--mute)' }}>· Center Court</span>
+            {m.round && <span style={{ fontWeight: 600, color: 'var(--ink)', flex: '0 0 auto' }}>{m.round}</span>}
+            {m.court && (
+              <span style={{ color: 'var(--mute)', overflow: 'hidden', textOverflow: 'ellipsis' }}>· {m.court}</span>
+            )}
           </span>
-          <span className="mono note">{m.meta}</span>
+          {(() => {
+            const t = formatTime(m.time);
+            return (
+              <span className="mono note" style={{ flex: '0 0 auto' }}>
+                {t.time || m.meta}
+                {t.tentative && <sup style={{ marginLeft: 1 }}>*</sup>}
+              </span>
+            );
+          })()}
         </div>
   
         <div style={{ height: 1, background: 'var(--stroke-soft)', margin: '7px 0 1px' }} />

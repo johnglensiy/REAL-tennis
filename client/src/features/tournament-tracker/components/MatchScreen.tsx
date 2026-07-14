@@ -141,7 +141,6 @@ const MATCH_STATIC = {
   duration: "2:14",
 };
 
-
 const FEED: FeedEvent[] = [
   {
     set: 4,
@@ -565,7 +564,7 @@ function Scoreboard({ match }: { match: Match }) {
   const gridCols = `34px 1fr 24px repeat(${setCount}, 22px) 36px`;
   return (
     <div>
-      <div
+      {/* <div
         style={{
           display: "grid",
           gridTemplateColumns: gridCols,
@@ -605,7 +604,7 @@ function Scoreboard({ match }: { match: Match }) {
         >
           PTS
         </div>
-      </div>
+      </div> */}
 
       <PlayerRow
         who="a"
@@ -739,7 +738,6 @@ function Momentum() {
 // ─────────────────────────────────────────────────────────────
 // Point feed
 // ─────────────────────────────────────────────────────────────
-
 
 // ─────────────────────────────────────────────────────────────
 // Point detail card

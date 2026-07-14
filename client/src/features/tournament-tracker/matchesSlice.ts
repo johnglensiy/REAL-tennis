@@ -168,6 +168,9 @@ export const matchesSlice = createSlice({
         status: "upcoming",
         scheduledDate: ev.scheduledDate,
         meta: `${ev.round} · ${ev.scheduledTime}`,
+        round: ev.round,
+        court: ev.court,
+        time: ev.scheduledTime,
         a: ev.playerA,
         b: ev.playerB,
       });
@@ -204,6 +207,9 @@ export const matchesSlice = createSlice({
         // no schedule to merge onto — stamp today so it shows on the live column
         scheduledDate: existing?.scheduledDate ?? todayLocalISO(),
         meta: existing?.meta ?? "",
+        round: existing?.round,
+        court: existing?.court,
+        time: existing?.time,
         live: "LIVE",
         a,
         b,

@@ -14,6 +14,9 @@ export interface MatchStateOld {
   status: string;
   scheduledDate: string;
   meta: string;
+  round?: string;
+  court?: string;
+  time?: string;
   live?: string;
   href?: string;
   a: PlayerStateOld;
