@@ -4,8 +4,8 @@ export interface UpcomingMatch {
     court: string;
     time: string;
     round: string;
-    player1: { name: string; seed: string | null; entry: string | null; atpId: string | null };
-    player2: { name: string; seed: string | null; entry: string | null; atpId: string | null };
+    player1: { name: string; seed: string | null; entry: string | null; atpId: string | null; ioc: string | null };
+    player2: { name: string; seed: string | null; entry: string | null; atpId: string | null; ioc: string | null };
     matchUrl: string | null;
 }
 
@@ -66,6 +66,16 @@ const atpIdFromImg = (src: string): string | null => {
 /** Resolve a player's ATP id, preferring the profile href over the image src. */
 const extractAtpId = (href: string, imgSrc: string): string | null =>
     atpIdFromHref(href) ?? atpIdFromImg(imgSrc);
+
+/**
+ * Extracts the IOC country code from the flag sprite reference, e.g.
+ * "/assets/atptour/assets/flags.svg#flag-bih" -> "BIH". ATP flag ids are the
+ * lowercase IOC code; returned uppercased. Null if absent/unrecognised.
+ */
+const extractIoc = (flagHref: string): string | null => {
+    const m = flagHref.match(/#flag-([a-z]{2,3})$/i);
+    return m ? m[1].toUpperCase() : null;
+};
 
 /**
  * Scrapes the ATP daily-schedule page for upcoming singles matches, grouped by day.
@@ -136,18 +146,25 @@ export const getUpcomingMatches = async (
                     // profile link carries the ATP id reliably (e.g. /en/players/damir-dzumhur/d923/overview)
                     const player1Href = players?.querySelector('.player .name a')?.getAttribute('href') ?? '';
                     const player2Href = players?.querySelector('.opponent .name a')?.getAttribute('href') ?? '';
+                    // flag sprite reference carries the IOC code (e.g. flags.svg#flag-bih).
+                    // NB: keep this inline — a named helper inside page.evaluate trips
+                    // esbuild/tsx's __name wrapper, which isn't defined in the page context.
+                    const flagUse1 = players?.querySelector('.player .country use');
+                    const flagUse2 = players?.querySelector('.opponent .country use');
+                    const player1FlagHref = flagUse1?.getAttribute('href') ?? flagUse1?.getAttribute('xlink:href') ?? '';
+                    const player2FlagHref = flagUse2?.getAttribute('href') ?? flagUse2?.getAttribute('xlink:href') ?? '';
                     const matchUrl = el.querySelector('a[href*="scores"]')?.getAttribute('href') ?? null;
                     const matchType = el.querySelector('.schedule-cta .match-type')?.textContent?.trim() ?? '';
-                    return { locationText, timeText, roundText, player1Raw, player2Raw, player1ImgSrc, player2ImgSrc, player1Href, player2Href, matchUrl, matchType };
+                    return { locationText, timeText, roundText, player1Raw, player2Raw, player1ImgSrc, player2ImgSrc, player1Href, player2Href, player1FlagHref, player2FlagHref, matchUrl, matchType };
                 });
             });
 
-            const parsePlayer = (raw: string, imgSrc: string, href: string) => {
+            const parsePlayer = (raw: string, imgSrc: string, href: string, flagHref: string) => {
                 const cleaned = raw.replace(/\s+/g, ' ').trim();
                 const seedMatch = cleaned.match(/\((\d+)\)/);
                 const entryMatch = cleaned.match(/\(([A-Z]{1,3})\)/);
                 const name = cleaned.replace(/\(\d+\)/g, '').replace(/\([A-Z]{1,3}\)/g, '').replace(/\s+/g, ' ').trim();
-                return { name, seed: seedMatch?.[1] ?? null, entry: entryMatch?.[1] ?? null, atpId: extractAtpId(href, imgSrc) };
+                return { name, seed: seedMatch?.[1] ?? null, entry: entryMatch?.[1] ?? null, atpId: extractAtpId(href, imgSrc), ioc: extractIoc(flagHref) };
             };
 
             let currentCourt = '';
@@ -162,8 +179,8 @@ export const getUpcomingMatches = async (
                 // skip WTA matches for now
                 if (raw.matchType === 'WTA') continue;
 
-                const p1 = parsePlayer(raw.player1Raw, raw.player1ImgSrc, raw.player1Href);
-                const p2 = parsePlayer(raw.player2Raw, raw.player2ImgSrc, raw.player2Href);
+                const p1 = parsePlayer(raw.player1Raw, raw.player1ImgSrc, raw.player1Href, raw.player1FlagHref);
+                const p2 = parsePlayer(raw.player2Raw, raw.player2ImgSrc, raw.player2Href, raw.player2FlagHref);
                 if (!p1.name && !p2.name) continue;
 
                 // doubles: player names contain a space-separated pair (two initials + surnames)

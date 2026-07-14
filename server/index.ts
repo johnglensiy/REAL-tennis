@@ -206,7 +206,7 @@ const SCHEDULE_TOURNAMENT = "wimbledon";
 
 const toPlayerState = (p: UpcomingMatch["player1"]): PlayerStateOld => ({
   name: p.name,
-  country: "", // not in schedule data
+  country: p.ioc ?? "", // IOC code scraped from the schedule flag sprite
   atpId: p.atpId,
   seed: p.seed ?? undefined,
 });
