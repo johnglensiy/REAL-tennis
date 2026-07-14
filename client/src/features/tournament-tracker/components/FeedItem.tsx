@@ -1,4 +1,5 @@
 import type { Who, PlayerInfo, FeedEvent } from "./MatchScreen";
+import { Flag } from "./Flag";
 
 export const FALLBACK_ATP_ID: Record<Who, string> = { A: "s0ag", B: "d643" };
 
@@ -63,24 +64,40 @@ export function FeedItem({
         background: "var(--paper)",
       }}
     >
-      <div
-        style={{
-          width: avatarSize,
-          height: avatarSize,
-          borderRadius: "50%",
-          // border: "1px solid var(--stroke)",
-          background: "var(--bg)",
-          overflow: "hidden",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <img
-          src={playerPhoto(players[who]?.atpId ?? FALLBACK_ATP_ID[who])}
-          alt={players[who]?.name}
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-        />
+      <div style={{ position: "relative", width: avatarSize, height: avatarSize }}>
+        <div
+          style={{
+            width: avatarSize,
+            height: avatarSize,
+            borderRadius: "50%",
+            // border: "1px solid var(--stroke)",
+            background: "var(--bg)",
+            overflow: "hidden",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <img
+            src={playerPhoto(players[who]?.atpId ?? FALLBACK_ATP_ID[who])}
+            alt={players[who]?.name}
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        </div>
+        {who && (
+          <Flag
+            ioc={players[who]?.country}
+            style={{
+              position: "absolute",
+              right: -2,
+              bottom: -1,
+              width: 16,
+              height: 12,
+              borderRadius: 2,
+              boxShadow: "0 0 0 1.5px var(--paper)",
+            }}
+          />
+        )}
       </div>
 
       <div>

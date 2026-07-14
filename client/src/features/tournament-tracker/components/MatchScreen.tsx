@@ -13,6 +13,7 @@ import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { screenPopped } from "../navigationSlice";
 import { selectMatchById } from "../matchesSlice";
 import { FeedItem, FALLBACK_ATP_ID } from "./FeedItem";
+import { Flag, flagAlpha2 } from "./Flag";
 
 // ─────────────────────────────────────────────────────────────
 // Types
@@ -398,26 +399,39 @@ function PlayerRow({
         background: "var(--paper)",
       }}
     >
-      {/* country box (placeholder) */}
-      <div
-        className="mono"
-        style={{
-          width: 24,
-          height: 16,
-          borderRadius: 2,
-          border: "1px solid var(--stroke)",
-          background: "var(--bg)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: 8,
-          color: "var(--ink-2)",
-          letterSpacing: "0.02em",
-          marginRight: 16,
-        }}
-      >
-        {country}
-      </div>
+      {/* country flag (falls back to the code box when unmapped) */}
+      {flagAlpha2(country) ? (
+        <Flag
+          ioc={country}
+          style={{
+            width: 20,
+            height: 15,
+            borderRadius: 2,
+            marginRight: 16,
+            justifySelf: "center",
+          }}
+        />
+      ) : (
+        <div
+          className="mono"
+          style={{
+            width: 24,
+            height: 16,
+            borderRadius: 2,
+            border: "1px solid var(--stroke)",
+            background: "var(--bg)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 8,
+            color: "var(--ink-2)",
+            letterSpacing: "0.02em",
+            marginRight: 16,
+          }}
+        >
+          {country}
+        </div>
+      )}
 
       {/* name */}
       <div
@@ -1067,13 +1081,13 @@ export default function TennisScoreboard({ matchId }: { matchId?: string }) {
         A: {
           name: reduxMatch?.a.name ?? s.playerA,
           seed: s.seedA,
-          country: s.countryA,
+          country: reduxMatch?.a.country || s.countryA,
           atpId: reduxMatch?.a.atpId ?? FALLBACK_ATP_ID.A,
         },
         B: {
           name: reduxMatch?.b.name ?? s.playerB,
           seed: s.seedB,
-          country: s.countryB,
+          country: reduxMatch?.b.country || s.countryB,
           atpId: reduxMatch?.b.atpId ?? FALLBACK_ATP_ID.B,
         },
       },
