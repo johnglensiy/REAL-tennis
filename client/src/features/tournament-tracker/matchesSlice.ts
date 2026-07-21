@@ -145,7 +145,7 @@ const matchesAdapter = createEntityAdapter<MatchStateOld>();
 
 const initialState: MatchesState = matchesAdapter.setAll(
   matchesAdapter.getInitialState(),
-  STUB_MATCHES,
+  STUB_MATCHES.map((m) => ({ ...m, pointHistory: [] })),
 );
 
 export const matchesSlice = createSlice({
@@ -171,8 +171,9 @@ export const matchesSlice = createSlice({
         round: ev.round,
         court: ev.court,
         time: ev.scheduledTime,
-        a: ev.playerA,
-        b: ev.playerB,
+        a: { ...ev.playerA, atpId: ev.playerA.atpId ?? undefined },
+        b: { ...ev.playerB, atpId: ev.playerB.atpId ?? undefined },
+        pointHistory: [],
       });
     },
 
@@ -213,6 +214,7 @@ export const matchesSlice = createSlice({
         live: "LIVE",
         a,
         b,
+        pointHistory: existing?.pointHistory ?? [],
       });
     },
   },

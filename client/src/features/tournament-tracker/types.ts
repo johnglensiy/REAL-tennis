@@ -6,7 +6,35 @@ export type MatchStatus =
   | "cancelled";
 export type Tour = "men" | "women";
 
-// not local to tournament tracker, is redux global state
+export interface Point {
+  type: "point";
+  id: string;
+
+  // score state AFTER this point — a point always advances the score,
+  // which is the whole reason ScoreUpdate can collapse into this
+  playerGameScore: number;
+  opponentGameScore: number;
+  playerSetScores: number[] | null;
+  opponentSetScores: number[] | null;
+
+  scorer: "1" | "2";
+  result: string; // how the point ended — ALWAYS present, even w/o rally analysis
+  timeElapsed: number;
+
+  // milestone: did this point also close out a game / set / match?
+  // absent = ordinary point. Replaces the old ScoreUpdate entirely.
+  completes?: "game" | "set" | "match";
+
+  // rally detail — per-point optional. null/absent = tournament or point
+  // has no rally analysis (rallyStats:false / rallyLengthMissing:true).
+  rally?: RallyDetail | null;
+}
+
+export interface RallyDetail {
+  length: number;
+}
+
+// not local to tournament tracker, is redux global state after all
 // should prolly move this to a client shared types file
 export interface MatchStateOld {
   id: string;
@@ -21,6 +49,7 @@ export interface MatchStateOld {
   href?: string;
   a: PlayerStateOld;
   b: PlayerStateOld;
+  pointHistory: Point[];
 }
 
 export interface PlayerStateOld {
