@@ -3,9 +3,65 @@ export type Tour = "men" | "women";
 // how a point ended — always present, even when the tournament has no rally analysis
 export type PointResult = "A" | "DF" | "W" | "UE" | "FE";
 
-// rally detail is per-point optional; only tournaments with rally analysis supply it
+export type Hand = "ForeHand" | "BackHand";
+
+// which moment of the ball's flight a tracked position represents
+export type BallEvent = "hit" | "peak" | "net" | "bounce" | "last";
+
+/**
+ * One tracked position of the ball, in court-frame metres.
+ * Origin is the net centre; +x runs along the court's length.
+ */
+export interface BallPosition {
+  x: number;
+  y: number;
+  z: number; // height above the court
+  at: BallEvent;
+  t: number; // seconds since the point's first contact
+  dt: number; // seconds since the previous position in this shot (0 on the first)
+}
+
+/**
+ * One stroke — the unit of rally trajectory. A point's `shots` in order gives
+ * the whole ball flight; `path` is that stroke's segment of it.
+ */
+export interface Shot {
+  index: number; // 0 is always the serve
+  isServe: boolean;
+  hand: Hand | null; // null on the serve — the feed doesn't classify it
+  t: number; // seconds into the point at contact
+  duration: number; // contact until the last tracked position of this stroke
+  path: BallPosition[];
+}
+
+/**
+ * Per-point rally detail. Optional on PointDTO: only tournaments with rally
+ * analysis supply it, and even then a point may be missing shots (see
+ * `truncated`). `length` is the only field guaranteed present.
+ */
 export interface RallyDetail {
-  length: number; // shot count
+  length: number; // official shot count (may exceed shots.length)
+  shots?: Shot[];
+  duration?: number; // seconds from serve contact to the last tracked position
+
+  // serve
+  serveType?: "Flat" | "Slice" | "Kick" | "Pronated";
+  serveCourt?: "deuce" | "ad";
+  serveSpeedKph?: number | null;
+  spin?: number | null; // rpm
+
+  // how the point finished
+  endHand?: Hand | null;
+  placement?: string | null; // e.g. "Cross Court", "Net Error"
+  trappedByNet?: boolean;
+
+  // situation
+  breakPoint?: boolean;
+  breakPointConverted?: boolean;
+
+  // the tracker lost one or more strokes — shots is incomplete and the
+  // feed's own summary coordinates come back null. Don't trust shot counts.
+  truncated?: boolean;
 }
 
 /**
