@@ -11,12 +11,20 @@ import type { MatchScheduled, ScoreUpdated } from "../../../../common/types";
 
 interface MatchesState extends EntityState<MatchStateOld, string> {}
 
+// Stub dates are relative to today so they always land inside the date strip
+// (which renders today ±7 days). Hardcoded dates go stale and the stubs vanish.
+const dayOffsetISO = (offset: number) => {
+  const d = new Date();
+  d.setDate(d.getDate() + offset);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
+
 const STUB_MATCHES = [
   {
     id: "main",
     tournamentId: "wimbledon",
     status: "live",
-    scheduledDate: "2026-07-04",
+    scheduledDate: dayOffsetISO(0),
     meta: "Set 4 · 2:14",
     live: "LIVE",
     href: "Tennis Scoreboard.html",
@@ -40,7 +48,7 @@ const STUB_MATCHES = [
     id: "m2",
     tournamentId: "wimbledon",
     status: "live",
-    scheduledDate: "2026-07-04",
+    scheduledDate: dayOffsetISO(0),
     meta: "Set 2 · 0:51",
     live: "LIVE",
     a: {
@@ -63,7 +71,7 @@ const STUB_MATCHES = [
     id: "m3",
     tournamentId: "wimbledon",
     status: "final",
-    scheduledDate: "2026-07-04",
+    scheduledDate: dayOffsetISO(0),
     meta: "Final · 2:38",
     a: {
       name: "T. Haas",
@@ -78,7 +86,7 @@ const STUB_MATCHES = [
     id: "m4",
     tournamentId: "wimbledon",
     status: "final",
-    scheduledDate: "2026-07-04",
+    scheduledDate: dayOffsetISO(-1), // yesterday — tests past dates
     meta: "Final · 1:54",
     a: {
       name: "K. Nakamura",
@@ -93,7 +101,7 @@ const STUB_MATCHES = [
     id: "m5",
     tournamentId: "wimbledon",
     status: "upcoming",
-    scheduledDate: "2026-07-04",
+    scheduledDate: dayOffsetISO(0),
     meta: "Today · 16:00",
     a: { name: "R. Costa", country: "POR", seed: "8" },
     b: { name: "S. Ali", country: "PAK", seed: "—" },
@@ -102,7 +110,7 @@ const STUB_MATCHES = [
     id: "e1",
     tournamentId: "eastbourne",
     status: "live",
-    scheduledDate: "2026-07-04",
+    scheduledDate: dayOffsetISO(0),
     meta: "Set 1 · 0:23",
     live: "LIVE",
     a: {
@@ -119,7 +127,7 @@ const STUB_MATCHES = [
     id: "e2",
     tournamentId: "eastbourne",
     status: "upcoming",
-    scheduledDate: "2026-07-04",
+    scheduledDate: dayOffsetISO(1), // tomorrow — tests future dates
     meta: "Today · 15:00",
     a: { name: "G. Rossi", country: "ITA", seed: "1" },
     b: { name: "A. Kovač", country: "SRB", seed: "7" },
@@ -128,7 +136,7 @@ const STUB_MATCHES = [
     id: "e3",
     tournamentId: "eastbourne",
     status: "upcoming",
-    scheduledDate: "2026-07-04",
+    scheduledDate: dayOffsetISO(1), // tomorrow
     meta: "Today · 18:45",
     a: { name: "D. Schmidt", country: "GER", seed: "3" },
     b: { name: "V. Horvat", country: "SLO", seed: "—" },
