@@ -2,10 +2,7 @@ import { useState, useMemo } from "react";
 
 import TournamentSection from "./TournamentSection";
 import PointHistory from "./PointHistory";
-import type { Tour, Tournament } from "../types";
-
-// to be replaced with TournamentsSlice
-import type { MatchEntry } from "../../../components/MatchCard";
+import type { Tour } from "../types";
 
 import { useAppSelector } from "../../../hooks";
 import { selectAllTournaments } from "../tournamentsSlice";
@@ -178,23 +175,23 @@ function Tabs({
   );
 }
 
-interface TournamentTrackerProps {
-  liveMatchData?: Map<string, MatchEntry>;
-}
+function TournamentTracker() {
+  // ── store (raw, unfiltered — `all*` means straight from redux) ──
+  const allTournaments = useAppSelector(selectAllTournaments);
+  const allMatches = useAppSelector(selectAllMatches);
 
-function TournamentTracker({
-  liveMatchData = new Map(),
-}: TournamentTrackerProps) {
-  console.log("liveMatchData size:", liveMatchData.size);
+  // ── local ui state ──
   const [tour, setTour] = useState<Tour>("men");
+  // `dates` sits here (not under "derived") because it seeds dateSel's initial value
   const dates = useMemo(() => calcNearestDates(), []);
   const [dateSel, setDateSel] = useState(() => dates.findIndex((d) => d.today));
-  const selectedDate = dates[dateSel];
 
-  const tournaments = useAppSelector(selectAllTournaments).filter(
-    (t) => t.tour === tour,
+  // ── derived ──
+  const selectedDate = dates[dateSel];
+  const tournamentsForTour = useMemo(
+    () => allTournaments.filter((t) => t.tour === tour),
+    [allTournaments, tour],
   );
-  const allMatches = useAppSelector(selectAllMatches);
 
   // show only matches scheduled on the selected date; drop tournaments left empty
   // const visibleTournaments = allTournaments
@@ -204,46 +201,6 @@ function TournamentTracker({
   //   }))
   //   .filter((t) => t.matches.length > 0);
   // // select all matches by date
-
-  {
-    /* cast liveMatchData as a tournament */
-  }
-  const liveTournament: Tournament = useMemo(
-    () => ({
-      name: "Live",
-      tour: tour,
-      detail: "In progress",
-      matches: [...liveMatchData.values()].map((entry) => ({
-        id: entry.matchId,
-        status: "live" as const,
-        meta: "",
-        a: {
-          name: `${entry.playerTeam.firstName[0]}. ${entry.playerTeam.lastName}`,
-          country: entry.playerTeam.country,
-          seed: String(entry.playerTeam.seed),
-          serving: entry.playerTeam.isServer,
-          pts: entry.playerTeam.gameScore,
-          sets: entry.playerTeam.setScores.filter(
-            (s) => s !== null,
-          ) as number[],
-        },
-        b: {
-          name: `${entry.opponentTeam.firstName[0]}. ${entry.opponentTeam.lastName}`,
-          country: entry.opponentTeam.country,
-          seed: String(entry.opponentTeam.seed),
-          serving: entry.opponentTeam.isServer,
-          pts: entry.opponentTeam.gameScore,
-          sets: entry.opponentTeam.setScores.filter(
-            (s) => s !== null,
-          ) as number[],
-        },
-      })),
-    }),
-    [liveMatchData, tour],
-  );
-  // have some data structure that stores matches
-
-  console.log("liveMatchData size:", liveMatchData.size);
 
   return (
     <div
@@ -295,11 +252,7 @@ function TournamentTracker({
 
       <div style={{ height: 18 }} />
 
-      {selectedDate?.today && liveMatchData.size > 0 && (
-        <TournamentSection key={liveTournament.name} t={liveTournament} />
-      )}
-
-      {tournaments.map((t) => {
+      {tournamentsForTour.map((t) => {
         // join by tournamentId + filter by selected date (UI logic, in the component)
         const matches = allMatches.filter(
           (m) =>
@@ -309,7 +262,7 @@ function TournamentTracker({
         return (
           <TournamentSection
             key={t.id}
-            t={{ name: t.name, tour: t.tour, detail: t.detail, matches }}
+            t={{ name: t.name, detail: t.detail, matches }}
           />
         );
       })}
