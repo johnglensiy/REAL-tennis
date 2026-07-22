@@ -8,12 +8,22 @@
 // Usage: <TennisScoreboard /> — no props required. Import into any React
 // project with React 18+; no other dependencies.
 
-import React, { useState, useMemo, type ReactNode } from "react";
+import React, { useState, useMemo, useEffect, type ReactNode } from "react";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { screenPopped } from "../navigationSlice";
-import { selectMatchById } from "../matchesSlice";
+import {
+  selectMatchById,
+  selectPointsByMatch,
+  pointsLoaded,
+} from "../matchesSlice";
+import type { Point } from "../types";
+import { pointsToFeed } from "../pointToFeedEvent";
 import { FeedItem, FALLBACK_ATP_ID } from "./FeedItem";
 import { Flag, flagAlpha2 } from "./Flag";
+
+// The court-vision dump is one recorded match with no id of its own. Pin it to
+// a stub match so the feed has somewhere to live until real points stream in.
+const POINTS_STUB_MATCH_ID = "main";
 
 // ─────────────────────────────────────────────────────────────
 // Types
@@ -69,7 +79,7 @@ export interface FeedEvent {
   time: string;
   text: string;
   who: Who | null;
-  tag: "WINNER" | "ACE" | "DF" | "BP" | "UE" | "SET";
+  tag: "WINNER" | "ACE" | "DF" | "BP" | "UE" | "FE" | "SET";
   detail?: FeedDetail;
 }
 
@@ -226,7 +236,9 @@ function computeFeedStats(feed: FeedEvent[], players: Record<Who, PlayerInfo>) {
     if (item.tag === "ACE") aces[item.who]++;
     if (item.tag === "BP") bp[item.who]++;
     const winner =
-      item.tag === "DF" || item.tag === "UE" ? other(item.who) : item.who;
+      item.tag === "DF" || item.tag === "UE" || item.tag === "FE"
+        ? other(item.who)
+        : item.who;
     if (winner === streakPlayer) streak++;
     else {
       streakPlayer = winner;
@@ -886,11 +898,16 @@ function Stat({ children }: { children: ReactNode }) {
 function Feed({
   players,
   avatarSize,
+  feed = FEED,
 }: {
   players: Record<Who, PlayerInfo>;
   avatarSize: number;
+  feed?: FeedEvent[];
 }) {
-  const feedStats = useMemo(() => computeFeedStats(FEED, players), [players]);
+  const feedStats = useMemo(
+    () => computeFeedStats(feed, players),
+    [feed, players],
+  );
   return (
     <div>
       <div
@@ -915,7 +932,7 @@ function Feed({
           Newest first
         </span>
       </div>
-      {FEED.map((f, i) => (
+      {feed.map((f, i) => (
         <FeedItem
           key={i}
           item={f}
@@ -1043,6 +1060,33 @@ export default function TennisScoreboard({ matchId }: { matchId?: string }) {
     matchId ? selectMatchById(state, matchId) : undefined,
   );
 
+  // Fetch this match's point history once. Dev wiring: the server serves one
+  // recorded court-vision match under whatever id we ask for, so it lands on
+  // POINTS_STUB_MATCH_ID regardless of which match is open.
+  const dispatch = useAppDispatch();
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/matchdata/points/${POINTS_STUB_MATCH_ID}`)
+      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+      .then((points: Point[]) => {
+        if (!cancelled)
+          dispatch(pointsLoaded({ matchId: POINTS_STUB_MATCH_ID, points }));
+      })
+      .catch((e) => console.warn("[points] fetch failed", e));
+    return () => {
+      cancelled = true;
+    };
+  }, [dispatch]);
+
+  const points = useAppSelector((state) =>
+    selectPointsByMatch(state, POINTS_STUB_MATCH_ID),
+  );
+  // fall back to the hand-written FEED until real points arrive
+  const feed = useMemo(
+    () => (points.length ? pointsToFeed(points) : FEED),
+    [points],
+  );
+
   const match = useMemo((): Match => {
     const setsWon = {
       a: Math.max(0, Math.min(s.setsWonA | 0, (s.bestOf - 1) / 2 + 1)),
@@ -1125,11 +1169,15 @@ export default function TennisScoreboard({ matchId }: { matchId?: string }) {
       {tab === "Points" && (
         <>
           {s.showPointCard && (
-            <PointCard item={FEED[0]} players={match.players} />
+            <PointCard item={feed[0]} players={match.players} />
           )}
           {s.showMomentum && <Momentum />}
           {s.showFeed && (
-            <Feed players={match.players} avatarSize={s.avatarSize} />
+            <Feed
+              players={match.players}
+              avatarSize={s.avatarSize}
+              feed={feed}
+            />
           )}
         </>
       )}

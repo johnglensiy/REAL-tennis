@@ -6,6 +6,10 @@ import { streamPointAndScheduleNext } from "../utils/streamPointAndScheduleNext.
 import pbp_tien_navone from "../data/tien-navone-pbp.json";
 import fs from "fs";
 import path from "path";
+import { buildPointsFromCourtVision } from "../utils/buildPointsFromCourtVision.ts";
+import type { PointDTO } from "../../common/types.ts";
+
+const COURT_VISION_FILE = "court-vision3d-firstservein.json";
 
 import { matchDataClients, allMatchData, scheduledMatches } from "../index.ts";
 
@@ -71,6 +75,28 @@ router.get("/matchdata/stream", (req, res) => {
 
   matchDataClients.add(res);
   req.on("close", () => matchDataClients.delete(res));
+});
+
+// Point history for a match, from the court-vision dump. Dev-only: the file is
+// one specific recorded match (MERIDA v DZUMHUR), served under whatever matchId
+// is asked for so it can be pinned onto a stub match in the client.
+// Parsed per request — it's a 1.6MB file and this isn't on a hot path.
+let pointsCache: PointDTO[] | null = null;
+
+router.get("/matchdata/points/:matchId", (req, res) => {
+  try {
+    if (!pointsCache) {
+      const file = path.join(import.meta.dirname, "..", COURT_VISION_FILE);
+      pointsCache = buildPointsFromCourtVision(
+        JSON.parse(fs.readFileSync(file, "utf8")),
+        "", // matchId is stamped per-request below
+      );
+    }
+    res.json(pointsCache.map((p) => ({ ...p, matchId: req.params.matchId })));
+  } catch (err) {
+    console.error("[points] failed to build point history", err);
+    res.status(500).json({ error: (err as Error).message });
+  }
 });
 
 router.get("/", async (req, res) => {

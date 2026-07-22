@@ -6,7 +6,7 @@ import {
   type PayloadAction,
 } from "@reduxjs/toolkit";
 import type { RootState } from "../../store";
-import type { MatchStateOld, PlayerStateOld } from "./types";
+import type { MatchStateOld, PlayerStateOld, Point } from "./types";
 import type { MatchScheduled, ScoreUpdated } from "../../../../common/types";
 
 interface MatchesState extends EntityState<MatchStateOld, string> {}
@@ -185,6 +185,19 @@ export const matchesSlice = createSlice({
       });
     },
 
+    // Bulk-load a match's point history (the court-vision dump). Points live
+    // nested on the match for now; when they outgrow it they move to their own
+    // slice keyed by matchId. Replaces rather than appends — this is a
+    // full-history fetch, and re-fetching must stay idempotent.
+    pointsLoaded(
+      state,
+      action: PayloadAction<{ matchId: string; points: Point[] }>,
+    ) {
+      const match = state.entities[action.payload.matchId];
+      if (!match) return; // point history for an unknown match is dropped
+      match.pointHistory = action.payload.points;
+    },
+
     scoreUpdated(state, action: PayloadAction<ScoreUpdated>) {
       const ev = action.payload;
       const existing = state.entities[ev.matchId];
@@ -240,5 +253,11 @@ export const selectMatchesByTournament = createSelector(
     allMatches.filter((m) => m.tournamentId === tournamentId),
 );
 
-export const { matchScheduled, scoreUpdated } = matchesSlice.actions;
+export const selectPointsByMatch = createSelector(
+  [(state: RootState, matchId: string) => selectMatchById(state, matchId)],
+  (match): Point[] => match?.pointHistory ?? [],
+);
+
+export const { matchScheduled, scoreUpdated, pointsLoaded } =
+  matchesSlice.actions;
 export default matchesSlice.reducer;

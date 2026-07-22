@@ -19,7 +19,10 @@ export function FeedItem({
   avatarSize?: number;
   statLines?: string[];
 }) {
+  // `who` is null on match-level events (end of set, etc.) — those have no
+  // player to attribute, so avatar/flag/name are all skipped below.
   const who = item.who;
+  const player = who ? players[who] : undefined;
   const isSet = item.tag === "SET";
   if (isSet) {
     return (
@@ -64,29 +67,32 @@ export function FeedItem({
         background: "var(--paper)",
       }}
     >
+      {/* the cell is kept even without a player so the grid stays aligned */}
       <div style={{ position: "relative", width: avatarSize, height: avatarSize }}>
-        <div
-          style={{
-            width: avatarSize,
-            height: avatarSize,
-            borderRadius: "50%",
-            // border: "1px solid var(--stroke)",
-            background: "var(--bg)",
-            overflow: "hidden",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <img
-            src={playerPhoto(players[who]?.atpId ?? FALLBACK_ATP_ID[who])}
-            alt={players[who]?.name}
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          />
-        </div>
+        {who && (
+          <div
+            style={{
+              width: avatarSize,
+              height: avatarSize,
+              borderRadius: "50%",
+              // border: "1px solid var(--stroke)",
+              background: "var(--bg)",
+              overflow: "hidden",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <img
+              src={playerPhoto(player?.atpId ?? FALLBACK_ATP_ID[who])}
+              alt={player?.name}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          </div>
+        )}
         {who && (
           <Flag
-            ioc={players[who]?.country}
+            ioc={player?.country}
             style={{
               position: "absolute",
               right: -2,
@@ -114,7 +120,8 @@ export function FeedItem({
           </span>
         </div>
         <div style={{ fontSize: 14, color: "var(--ink)", fontWeight: 500 }}>
-          {players[who]?.name.split(" ").slice(-1)[0]} · {item.text}
+          {player && `${player.name.split(" ").slice(-1)[0]} · `}
+          {item.text}
         </div>
         {statLines.map((line, i) => (
           <div
