@@ -8,6 +8,8 @@
     "build": "tsc -b && vite build",
     "build:ext": "tsc -b && vite build --mode extension",
     "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.app.json --noEmit",
+    "typecheck:watch": "tsc -p tsconfig.app.json --noEmit --watch",
     "preview": "vite preview"
   },
   "dependencies": {
