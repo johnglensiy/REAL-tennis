@@ -13,11 +13,17 @@ export function FeedItem({
   players,
   avatarSize = 32,
   statLines = [],
+  expandable = false,
+  expanded = false,
+  onToggle,
 }: {
   item: FeedEvent;
   players: Record<Who, PlayerInfo>;
   avatarSize?: number;
   statLines?: string[];
+  expandable?: boolean;
+  expanded?: boolean;
+  onToggle?: () => void;
 }) {
   // `who` is null on match-level events (end of set, etc.) — those have no
   // player to attribute, so avatar/flag/name are all skipped below.
@@ -57,18 +63,22 @@ export function FeedItem({
 
   return (
     <div
+      onClick={onToggle}
       style={{
         display: "grid",
         gridTemplateColumns: avatarSize + "px 1fr auto",
         gap: 12,
         alignItems: "center",
         padding: "12px 16px",
-        borderBottom: "1px solid var(--stroke-soft)",
-        background: "var(--paper)",
+        borderBottom: expanded ? "none" : "1px solid var(--stroke-soft)",
+        background: expanded ? "var(--bg)" : "var(--paper)",
+        cursor: expandable ? "pointer" : "default",
       }}
     >
       {/* the cell is kept even without a player so the grid stays aligned */}
-      <div style={{ position: "relative", width: avatarSize, height: avatarSize }}>
+      <div
+        style={{ position: "relative", width: avatarSize, height: avatarSize }}
+      >
         {who && (
           <div
             style={{
@@ -138,7 +148,16 @@ export function FeedItem({
         ))}
       </div>
 
-      <div className="mono" style={{ fontSize: 11, color: "var(--mute)" }}>
+      <div
+        className="mono"
+        style={{
+          fontSize: 11,
+          color: expanded ? "var(--ink-2)" : "var(--mute)",
+          // chevron points right when collapsed, down when expanded
+          transform: expandable && expanded ? "rotate(90deg)" : "none",
+          transition: "transform 0.15s ease",
+        }}
+      >
         ›
       </div>
     </div>
