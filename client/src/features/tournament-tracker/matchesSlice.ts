@@ -248,7 +248,7 @@ export const {
 } = matchesAdapter.getSelectors((state: RootState) => state.matches);
 
 export const selectMatchesByTournament = createSelector(
-  [selectAllMatches, (state: RootState, tournamentId: string) => tournamentId],
+  [selectAllMatches, (_state: RootState, tournamentId: string) => tournamentId],
   (allMatches, tournamentId) =>
     allMatches.filter((m) => m.tournamentId === tournamentId),
 );
