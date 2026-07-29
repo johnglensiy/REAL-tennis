@@ -14,11 +14,17 @@ import { MatchScheduled, PlayerStateOld, Tour } from "../common/types.ts";
 import { decryptResponse, decryptResponseRG } from "./scripts/rolandgarros.ts";
 import { getUpcomingMatches } from "./utils/getUpcomingMatches.ts";
 import { getLiveMatches } from "./utils/getLiveMatches.ts";
+import { connectToMongo } from "./db/connection.ts";
+import * as matchesRepo from "./db/matchesRepo.ts";
 
 const app = express();
 const PORT = 3000;
 
 app.use(express.json());
+
+// persist match/point data to MongoDB alongside the existing in-memory
+// state and SSE fanout — see server/db/
+await connectToMongo();
 
 export let browser: Browser;
 export let context: BrowserContext;
@@ -230,6 +236,14 @@ export const scheduledMatches: MatchScheduled[] = upcomingMatches.flatMap(
     ),
 );
 
+await Promise.all(
+  scheduledMatches.map((m) =>
+    matchesRepo
+      .upsertScheduledMatch(m)
+      .catch((e) => console.error("[mongo] failed to persist scheduled match", e)),
+  ),
+);
+
 // stream live scores: broadcast each ScoreUpdated to all SSE clients
 await getLiveMatches(
   context,
@@ -239,6 +253,12 @@ await getLiveMatches(
       for (const u of updates) {
         client.write(`data: ${JSON.stringify(u)}\n\n`);
       }
+    }
+
+    for (const u of updates) {
+      matchesRepo
+        .upsertScoreUpdate(u)
+        .catch((e) => console.error("[mongo] failed to persist score update", e));
     }
   },
 );

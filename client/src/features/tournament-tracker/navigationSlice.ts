@@ -1,10 +1,4 @@
-import {
-  createEntityAdapter,
-  type EntityState,
-  createSlice,
-  createSelector,
-  type PayloadAction,
-} from "@reduxjs/toolkit";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../../store";
 
 export interface Screen {

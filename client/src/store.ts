@@ -1,5 +1,4 @@
 import { configureStore } from "@reduxjs/toolkit";
-import type { Action } from "@reduxjs/toolkit";
 
 import tournamentsReducer from "./features/tournament-tracker/tournamentsSlice";
 import matchesReducer from "./features/tournament-tracker/matchesSlice";

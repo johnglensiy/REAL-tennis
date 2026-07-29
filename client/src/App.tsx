@@ -181,7 +181,7 @@ function App() {
   // if (!data) return <div>Loading winners...</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
+    <div className="device-frame min-h-screen font-sans" style={{ minHeight: "100svh" }}>
       <StackNavigator />
 
       {/* Old code */}

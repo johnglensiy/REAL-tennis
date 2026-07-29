@@ -1,8 +1,4 @@
-import {
-  createEntityAdapter,
-  createSlice,
-  type PayloadAction,
-} from "@reduxjs/toolkit";
+import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
 import type { Tour } from "./types";
 import type { RootState } from "../../store";
 

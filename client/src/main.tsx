@@ -4,13 +4,13 @@ import { Provider } from 'react-redux'
 
 import 'flag-icons/css/flag-icons.min.css'
 import './index.css'
-import App from './App.tsx'
+import LandingPage from './marketing/LandingPage.tsx'
 import { store } from './store'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Provider store={store}>
-      <App />
+      <LandingPage />
     </Provider>
   </StrictMode>,
 )

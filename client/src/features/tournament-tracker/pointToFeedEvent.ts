@@ -92,6 +92,7 @@ function toFeedEvent(p: Point): FeedEvent {
               ? "FE"
               : "UE",
     detail: detail(p),
+    pointId: p.id,
   };
 }
 

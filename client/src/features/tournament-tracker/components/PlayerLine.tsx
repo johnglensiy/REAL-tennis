@@ -11,23 +11,6 @@ export interface Player {
   winner?: boolean;
 }
 
-function BallDot({ color = "var(--accent)" }: { color?: string }) {
-  return (
-    <span
-      style={{
-        display: "inline-block",
-        width: 8,
-        height: 8,
-        borderRadius: "50%",
-        background: color,
-        border: "1px solid " + color,
-        boxShadow: "inset -1.5px -1.5px 0 rgba(0,0,0,0.08)",
-        flex: "0 0 auto",
-      }}
-    />
-  );
-}
-
 export default function PlayerLine({
   p,
   status,

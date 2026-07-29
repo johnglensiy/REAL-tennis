@@ -18,6 +18,7 @@ import {
 } from "../matchesSlice";
 import type { Point } from "../types";
 import { pointsToFeed } from "../pointToFeedEvent";
+import { PointReplay } from "./PointReplay";
 import { FeedItem, FALLBACK_ATP_ID } from "./FeedItem";
 import { Flag, flagAlpha2 } from "./Flag";
 
@@ -81,6 +82,9 @@ export interface FeedEvent {
   who: Who | null;
   tag: "WINNER" | "ACE" | "DF" | "BP" | "UE" | "FE" | "SET";
   detail?: FeedDetail;
+  // the point this event came from — lets the feed expand a replay for it.
+  // absent on match-level events (set dividers).
+  pointId?: string;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -899,15 +903,22 @@ function Feed({
   players,
   avatarSize,
   feed = FEED,
+  points = [],
 }: {
   players: Record<Who, PlayerInfo>;
   avatarSize: number;
   feed?: FeedEvent[];
+  points?: Point[];
 }) {
   const feedStats = useMemo(
     () => computeFeedStats(feed, players),
     [feed, players],
   );
+  // point id -> Point, so an expanded item can show that point's replay
+  const byId = useMemo(() => new Map(points.map((p) => [p.id, p])), [points]);
+  // single-open accordion: opening one point collapses any other
+  const [openId, setOpenId] = useState<string | null>(null);
+
   return (
     <div>
       <div
@@ -932,15 +943,34 @@ function Feed({
           Newest first
         </span>
       </div>
-      {feed.map((f, i) => (
-        <FeedItem
-          key={i}
-          item={f}
-          players={players}
-          avatarSize={avatarSize}
-          statLines={feedStats[i]}
-        />
-      ))}
+      {feed.map((f, i) => {
+        const point = f.pointId ? byId.get(f.pointId) : undefined;
+        // only points with rally trajectory can be replayed
+        const canExpand = !!point?.rally?.shots?.length;
+        const expanded = canExpand && openId === f.pointId;
+        return (
+          <div key={f.pointId ?? `set-${i}`}>
+            <FeedItem
+              item={f}
+              players={players}
+              avatarSize={avatarSize}
+              statLines={feedStats[i]}
+              expandable={canExpand}
+              expanded={expanded}
+              onToggle={
+                canExpand
+                  ? () => setOpenId(expanded ? null : (f.pointId ?? null))
+                  : undefined
+              }
+            />
+            {expanded && point && (
+              <div style={{ borderBottom: "1px solid var(--stroke-soft)" }}>
+                <PointReplay points={[point]} focusId={point.id} />
+              </div>
+            )}
+          </div>
+        );
+      })}
       <div style={{ padding: 16, textAlign: "center" }}>
         <span className="mono note">— load earlier points —</span>
       </div>
@@ -1177,6 +1207,7 @@ export default function TennisScoreboard({ matchId }: { matchId?: string }) {
               players={match.players}
               avatarSize={s.avatarSize}
               feed={feed}
+              points={points}
             />
           )}
         </>

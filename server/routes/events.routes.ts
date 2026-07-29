@@ -8,6 +8,7 @@ import fs from "fs";
 import path from "path";
 import { buildPointsFromCourtVision } from "../utils/buildPointsFromCourtVision.ts";
 import type { PointDTO } from "../../common/types.ts";
+import * as pointsRepo from "../db/pointsRepo.ts";
 
 const COURT_VISION_FILE = "court-vision3d-firstservein.json";
 
@@ -83,8 +84,18 @@ router.get("/matchdata/stream", (req, res) => {
 // Parsed per request — it's a 1.6MB file and this isn't on a hot path.
 let pointsCache: PointDTO[] | null = null;
 
-router.get("/matchdata/points/:matchId", (req, res) => {
+router.get("/matchdata/points/:matchId", async (req, res) => {
   try {
+    const { matchId } = req.params;
+
+    // Mongo is authoritative once a match's points have been persisted —
+    // skip re-parsing the 1.6MB court-vision file on every request.
+    const stored = await pointsRepo.getPointsForMatch(matchId);
+    if (stored.length > 0) {
+      res.json(stored);
+      return;
+    }
+
     if (!pointsCache) {
       const file = path.join(import.meta.dirname, "..", COURT_VISION_FILE);
       pointsCache = buildPointsFromCourtVision(
@@ -92,7 +103,9 @@ router.get("/matchdata/points/:matchId", (req, res) => {
         "", // matchId is stamped per-request below
       );
     }
-    res.json(pointsCache.map((p) => ({ ...p, matchId: req.params.matchId })));
+    const points = pointsCache.map((p) => ({ ...p, matchId }));
+    await pointsRepo.upsertPoints(points);
+    res.json(points);
   } catch (err) {
     console.error("[points] failed to build point history", err);
     res.status(500).json({ error: (err as Error).message });

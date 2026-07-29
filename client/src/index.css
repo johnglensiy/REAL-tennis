@@ -191,11 +191,18 @@ button { font-family: inherit; cursor: pointer; }
 
 /* ─── App container ─────────────────────────────────────────── */
 #root {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* The extension panel's real width — applied wherever the extension UI
+   itself (not marketing chrome) is rendered, standalone or in a preview. */
+.device-frame {
   width: 400px;
   max-width: 100%;
   margin: 0 auto;
   border-inline: 1px solid var(--hairline);
-  min-height: 100svh;
   display: flex;
   flex-direction: column;
 }
